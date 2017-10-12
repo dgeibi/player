@@ -1,0 +1,87 @@
+.player__controls--right {
+  float: right;
+}
+
+.player__controls--left {
+  float: left;
+  vertical-align: middle;
+}
+
+.player__process-bar {
+  width: 100%;
+}
+
+#audio-file {
+  visibility: hidden;
+  position: absolute;
+}
+
+.file-selector {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+main {
+  padding: 0 10px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.player__button {
+  padding: 0;
+  margin: 0;
+  display: inline-block;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.player__button::before {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  padding: 0;
+  margin: 0 3px;
+}
+
+.player__button:focus {
+  outline: 0;
+}
+
+.player__button--play::before {
+  content: url(icons/play.svg);
+}
+
+.player__button--pause::before {
+  content: url(icons/pause.svg)
+}
+
+.player__button--loop::before {
+  content: url(icons/repeat.svg)
+}
+
+.player__button--prev::before {
+  content: url(icons/skip-back.svg)
+}
+
+.player__button--next::before {
+  content: url(icons/skip-forward.svg)
+}
+
+.player__loop-toggle {
+  position: absolute;
+  visibility: hidden;
+}
+
+.player__loop-toggle label {
+  position: relative;
+}
+
+.player__loop-toggle + label::before {
+  opacity: 0.2;
+}
+
+.player__loop-toggle:checked + label::before {
+  opacity: 1;
+}

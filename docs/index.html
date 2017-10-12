@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Player</title>
+  <script async src="app.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/mobi.css@3.1.1/dist/mobi.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <button class="btn file-selector">
+       加载本地音乐<input type="file" name="" id="audio-file" accept="audio/*" multiple>
+    </button>
+    <div class="player">
+      <header class="player__title">什么也没有</header>
+      <audio class="player__audio"></audio>
+      <div class="player__body">
+        <div class="player__art"></div>
+        <div>
+          <!-- todo should use custom one -->
+          <input type="range" value="0" class="player__process-bar player__range">
+        </div>
+        <div class="player__controls">
+          <div class="player__controls--left flex-center flex-middle">
+
+            <span class="player__current-time">0:00</span>/<span class="player__duration">0:00</span>
+            <button class="player__button player__button--play" type="button" title="播放"></button>
+            <button class="player__button player__button--prev" type="button" title="上一首"></button>
+            <button class="player__button player__button--next" type="button" title="下一首"></button>
+          </div>
+
+          <div class="player__controls--right flex-center flex-middle">
+            <span>
+              <input type="checkbox" id="player__loop-toggle" class="player__loop-toggle">
+              <label for="player__loop-toggle" class="player__button player__button--loop"></label>
+            </span>
+            <input class="player__volume player__range" type="range" min="0" max="100">
+          </div>
+
+        </div>
+      </div>
+      <div class="player__playlist"></div>
+    </div>
+  </main>
+</body>
+</html>
