@@ -6,13 +6,17 @@ class Store {
    */
   constructor(opts) {
     const { storeName, dbPromise } = opts
+
+    /** @type {Promise} */
     this.dbPromise = dbPromise
     this.storeName = storeName
   }
 
   get(key) {
-    return this.dbPromise.then(db => db.transaction(this.storeName)
-      .objectStore(this.storeName).get(key))
+    const { dbPromise, storeName } = this
+
+    return dbPromise.then(db => db.transaction(storeName)
+      .objectStore(storeName).get(key))
   }
 
   set(key, val) {
