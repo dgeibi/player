@@ -25,7 +25,7 @@ class Store {
   }
 
   setValue(val) {
-    this.set(undefined, val)
+    return this.set(undefined, val)
   }
 
   delete(key) {
