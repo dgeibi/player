@@ -52,7 +52,7 @@ module.exports = (env = {}) => {
   ])
 
   if (isProduction) {
-    return common
+    return merge(common, require('./webpack.config.prod'))
   }
   return merge(common, require('./webpack.config.dev'))
 }
