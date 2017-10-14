@@ -6,7 +6,14 @@ import PlayList from './PlayList'
 import { blobStore, playListStore, playerStore, metaStore } from './stores'
 
 class Player {
-  constructor({ audio, loop, metaDatas, playlists, listid, currentTime } = {}) {
+  constructor({ audio,
+    loop,
+    metaDatas,
+    playlists,
+    selectedListID,
+    playingListID,
+    currentTime,
+  } = {}) {
     Object.assign(this, EventEmitter())
 
     /** @type {HTMLAudioElement} */
@@ -30,7 +37,8 @@ class Player {
     })
 
     this.loop = Boolean(loop)
-    this.listid = listid || 'default'
+    this.playingListID = playingListID || 'default'
+    this.selectedListID = selectedListID || 'default'
     this.currentTime = currentTime || 0
 
     /** @type {Map<string, PlayList>} */
@@ -40,7 +48,7 @@ class Player {
       this.playlists.set('default', new PlayList({ audio, title: 'default' }))
     }
 
-    const playlist = this.getCurrentPlayList()
+    const playlist = this.playlists.get(this.playingListID)
 
     playlist.setTrack().then(() => {
       this.audio.currentTime = this.currentTime
@@ -48,9 +56,17 @@ class Player {
   }
 
   static async fromStore(audio) {
-    const [loop, listid, currentTime, playlistOpts, metaDataArr] = await Promise.all([
+    const [
+      loop,
+      playingListID,
+      selectedListID,
+      currentTime,
+      playlistOpts,
+      metaDataArr,
+    ] = await Promise.all([
       playerStore.get('loop'),
-      playerStore.get('listid'),
+      playerStore.get('playingListID'),
+      playerStore.get('selectedListID'),
       playerStore.get('currentTime'),
       playListStore.getAll(),
       metaStore.getAll(),
@@ -62,7 +78,15 @@ class Player {
       .reduce((map, { title, keys, pos }) =>
         map.set(title, new PlayList({ title, keys, audio, pos })), new Map())
 
-    return new Player({ audio, loop, listid, playlists, metaDatas, currentTime })
+    return new Player({
+      audio,
+      loop,
+      selectedListID,
+      playingListID,
+      playlists,
+      metaDatas,
+      currentTime,
+    })
   }
 
   set(key, value) {
@@ -89,7 +113,7 @@ class Player {
     const files = Array.from(f)
     const tags = await Promise.all(files.map(ID3.parse))
 
-    const playlist = this.getCurrentPlayList()
+    const playlist = this.playlists.get(this.selectedListID)
 
     tags.forEach((tag, index) => {
       const { album, artist, title } = tag
@@ -111,12 +135,8 @@ class Player {
     playlist.save()
   }
 
-  getCurrentPlayList() {
-    return this.playlists.get(this.listid)
-  }
-
   async play() {
-    const playlist = this.getCurrentPlayList()
+    const playlist = this.playlists.get(this.playingListID)
     const ret = await playlist.play()
     if (ret !== false) this.playing = true
     return ret
@@ -133,7 +153,7 @@ class Player {
 
   async skip(method) {
     const { loop } = this
-    const playlist = this.getCurrentPlayList()
+    const playlist = this.playlists.get(this.playingListID)
     if (await playlist[method](loop)) {
       return this.play()
     }
@@ -164,7 +184,8 @@ function setGet(F, key) {
 }
 
 setGet(Player, 'loop')
-setGet(Player, 'listid')
+setGet(Player, 'playingListID')
+setGet(Player, 'selectedListID')
 setGet(Player, 'currentTime')
 
 export default Player
