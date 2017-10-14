@@ -2,6 +2,7 @@ import EventEmitter from 'uemitter'
 import ID3 from 'id3-parser'
 import nanoid from 'nanoid'
 
+import combine from './utils/combine'
 import PlayList from './PlayList'
 import { blobStore, playListStore, playerStore, metaStore } from './stores'
 
@@ -170,22 +171,24 @@ class Player {
   }
 }
 
-function setGet(F, key) {
-  Object.defineProperty(F.prototype, key, {
-    get() {
-      return this.get(key)
-    },
+function setGet(key) {
+  return (F) => {
+    Object.defineProperty(F.prototype, key, {
+      get() {
+        return this.get(key)
+      },
 
-    set(v) {
-      this.set(key, v)
-    },
-  })
-  return F
+      set(v) {
+        this.set(key, v)
+      },
+    })
+    return F
+  }
 }
 
-setGet(Player, 'loop')
-setGet(Player, 'playingListID')
-setGet(Player, 'selectedListID')
-setGet(Player, 'currentTime')
-
-export default Player
+export default combine(
+  setGet('playingListID'),
+  setGet('selectedListID'),
+  setGet('loop'),
+  setGet('currentTime')
+)(Player)
