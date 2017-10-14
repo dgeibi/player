@@ -10,6 +10,8 @@
   "license": "MIT",
   "dependencies": {
     "id3-parser": "^1.2.0",
+    "idb": "^2.0.4",
+    "nanoid": "^0.2.2",
     "uemitter": "0.0.3"
   },
   "devDependencies": {
