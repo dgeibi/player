@@ -2,7 +2,9 @@
 import { blobStore, playListStore } from './stores'
 
 class PlayList {
-  constructor({ title, keys, audio, pos } = {}) {
+  constructor({
+    title, keys, audio, pos,
+  } = {}) {
     /** @type {Set<string>} */
     this.keys = new Set(keys)
 

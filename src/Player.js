@@ -6,14 +6,11 @@ import combine from './utils/combine'
 import PlayList from './PlayList'
 import { blobStore, playListStore, playerStore, metaStore } from './stores'
 
+const FALLBACK_PLAYLIST = '所有歌曲'
+
 class Player {
-  constructor({ audio,
-    loop,
-    metaDatas,
-    playlists,
-    selectedListID,
-    playingListID,
-    currentTime,
+  constructor({
+    audio, loop, metaDatas, playlists, selectedListID, playingListID, currentTime,
   } = {}) {
     Object.assign(this, EventEmitter())
 
@@ -38,22 +35,29 @@ class Player {
     })
 
     this.loop = Boolean(loop)
-    this.playingListID = playingListID || 'default'
-    this.selectedListID = selectedListID || 'default'
+    this.playingListID = playingListID || FALLBACK_PLAYLIST
+    this.selectedListID = selectedListID || FALLBACK_PLAYLIST
     this.currentTime = currentTime || 0
 
     /** @type {Map<string, PlayList>} */
     this.playlists = new Map(playlists)
 
     if (this.playlists.size === 0) {
-      this.playlists.set('default', new PlayList({ audio, title: 'default' }))
+      this.playlists.set(
+        FALLBACK_PLAYLIST,
+        new PlayList({ audio, title: FALLBACK_PLAYLIST })
+      )
     }
 
+    this.listOfAll = this.playlists.get(FALLBACK_PLAYLIST)
     const playlist = this.playlists.get(this.playingListID)
 
-    playlist.setTrack().then(() => {
-      this.audio.currentTime = this.currentTime
-    })
+    playlist
+      .setTrack()
+      .then(() => {
+        this.audio.currentTime = this.currentTime
+      })
+      .catch(() => {})
   }
 
   static async fromStore(audio) {
@@ -75,9 +79,19 @@ class Player {
 
     const metaDatas = metaDataArr.reduce((map, x) => map.set(x.key, x), new Map())
 
-    const playlists = playlistOpts
-      .reduce((map, { title, keys, pos }) =>
-        map.set(title, new PlayList({ title, keys, audio, pos })), new Map())
+    const playlists = playlistOpts.reduce(
+      (map, { title, keys, pos }) =>
+        map.set(
+          title,
+          new PlayList({
+            title,
+            keys,
+            audio,
+            pos,
+          })
+        ),
+      new Map()
+    )
 
     return new Player({
       audio,
@@ -114,7 +128,7 @@ class Player {
     const files = Array.from(f)
     const tags = await Promise.all(files.map(ID3.parse))
 
-    const playlist = this.playlists.get(this.selectedListID)
+    const playlist = this.listOfAll
 
     tags.forEach((tag, index) => {
       const { album, artist, title } = tag
@@ -122,7 +136,13 @@ class Player {
       const file = files[index]
       const { name } = file
 
-      const info = { key, album, artist, title, name }
+      const info = {
+        key,
+        album,
+        artist,
+        title,
+        name,
+      }
       info.title = info.title || info.name.replace(/\.\S*?$/, '')
 
       playlist.add(key)
@@ -186,9 +206,11 @@ function setGet(key) {
   }
 }
 
-export default combine(
+combine(
   setGet('playingListID'),
   setGet('selectedListID'),
   setGet('loop'),
   setGet('currentTime')
 )(Player)
+
+export default Player

@@ -50,23 +50,23 @@ main {
 }
 
 .player__button--play::before {
-  content: url(icons/play.svg);
+  content: url(../icons/play.svg);
 }
 
 .player__button--pause::before {
-  content: url(icons/pause.svg)
+  content: url(../icons/pause.svg);
 }
 
 .player__button--loop::before {
-  content: url(icons/repeat.svg)
+  content: url(../icons/repeat.svg);
 }
 
 .player__button--prev::before {
-  content: url(icons/skip-back.svg)
+  content: url(../icons/skip-back.svg);
 }
 
 .player__button--next::before {
-  content: url(icons/skip-forward.svg)
+  content: url(../icons/skip-forward.svg);
 }
 
 .player__loop-toggle {

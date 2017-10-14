@@ -15,8 +15,11 @@ class Store {
   get(key) {
     const { dbPromise, storeName } = this
 
-    return dbPromise.then(db => db.transaction(storeName)
-      .objectStore(storeName).get(key))
+    return dbPromise.then(db =>
+      db
+        .transaction(storeName)
+        .objectStore(storeName)
+        .get(key))
   }
 
   set(key, val) {
@@ -58,11 +61,11 @@ class Store {
     return dbPromise.then((db) => {
       const tx = db.transaction(storeName)
       const keys = []
-      const store = tx.objectStore(storeName);
+      const store = tx.objectStore(storeName)
 
       // This would be store.getAllKeys(), but it isn't supported by Edge or Safari.
       // openKeyCursor isn't supported by Safari, so we fall back
-      (store.iterateKeyCursor || store.iterateCursor).call(store, (cursor) => {
+      ;(store.iterateKeyCursor || store.iterateCursor).call(store, (cursor) => {
         if (!cursor) return
         keys.push(cursor.key)
         cursor.continue()
@@ -75,8 +78,11 @@ class Store {
   getAll() {
     const { dbPromise, storeName } = this
 
-    return dbPromise.then(db => db.transaction(storeName)
-      .objectStore(storeName).getAll())
+    return dbPromise.then(db =>
+      db
+        .transaction(storeName)
+        .objectStore(storeName)
+        .getAll())
   }
 }
 
