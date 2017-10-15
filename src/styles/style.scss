@@ -34,40 +34,51 @@ main {
 }
 
 .player__button {
-  padding: 0;
-  margin: 0;
+  padding: 2px;
+  margin: 0 3px;
   display: inline-block;
   border: none;
   background: transparent;
   cursor: pointer;
 }
 
+.player__button:focus {
+  outline: 0;
+}
+
+.player__button:focus::before {
+  border: 1px solid #3da6f1;
+}
+
 .player__button::before {
   width: 24px;
   height: 24px;
-  display: inline-block;
+  background-size: contain;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  display: block;
   padding: 0;
-  margin: 0 3px;
+  content: ' ';
 }
 
 .player__button--play::before {
-  content: url(../icons/play.svg);
+  background-image: url(../icons/play.svg);
 }
 
 .player__button--pause::before {
-  content: url(../icons/pause.svg);
+  background-image: url(../icons/pause.svg);
 }
 
 .player__button--prev::before {
-  content: url(../icons/skip-back.svg);
+  background-image: url(../icons/skip-back.svg);
 }
 
 .player__button--next::before {
-  content: url(../icons/skip-forward.svg);
+  background-image: url(../icons/skip-forward.svg);
 }
 
 .player__loop-toggle::before {
-  content: url(../icons/repeat.svg);
+  background-image: url(../icons/repeat.svg);
   opacity: 0.2;
 }
 
