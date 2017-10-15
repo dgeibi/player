@@ -22,9 +22,9 @@
     "idb": "^2.0.4",
     "nanoid": "^0.2.2",
     "prop-types": "^15.6.0",
-    "rc-switch": "^1.5.3",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
+    "react-feather": "^1.0.7",
     "react-hot-loader": "^3.0.0",
     "uemitter": "0.0.3"
   },

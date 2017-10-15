@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Row } from 'antd'
+import { Pause, Play, SkipBack, SkipForward } from 'react-feather'
 
 const pad = n => (Number(n) < 10 ? `0${n}` : String(n))
 const convertSecs = s => `${Math.floor(s / 60)}:${pad(Math.floor(s % 60))}`
@@ -18,6 +19,8 @@ class ControlsLeft extends React.Component {
 
   state = {
     playing: false,
+    currentTime: this.props.audio.currentTime || 0,
+    duration: this.props.audio.duration || 0,
   }
 
   prev = () => {
@@ -70,31 +73,24 @@ class ControlsLeft extends React.Component {
   }
 
   render() {
-    const { playing } = this.state
-    const { currentTime, duration } = this.props.audio
+    const { playing, currentTime, duration } = this.state
     return (
       <Row className="player__controls--left" type="flex" justify="center" align="middle">
-        <span className="player__current-time">{convertSecs(currentTime)}</span>/<span className="player__duration">{convertSecs(duration || 0)}</span>
+        <span className="player__current-time">{convertSecs(currentTime)}</span>/<span className="player__duration">{convertSecs(duration)}</span>
         <button
-          className={`player__button ${playing
-            ? 'player__button--pause'
-            : 'player__button--play'}`}
+          className="player__button"
           type="button"
           title={playing ? '暂停' : '播放'}
           onClick={this.handleToggle}
-        />
-        <button
-          className="player__button player__button--prev"
-          type="button"
-          title="上一首"
-          onClick={this.prev}
-        />
-        <button
-          className="player__button player__button--next"
-          type="button"
-          title="下一首"
-          onClick={this.next}
-        />
+        >
+          {playing ? <Pause /> : <Play />}
+        </button>
+        <button className="player__button" type="button" title="上一首" onClick={this.prev}>
+          <SkipBack />
+        </button>
+        <button className="player__button" type="button" title="下一首" onClick={this.next}>
+          <SkipForward />
+        </button>
       </Row>
     )
   }

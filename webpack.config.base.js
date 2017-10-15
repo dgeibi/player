@@ -22,20 +22,6 @@ module.exports = {
         include: defaultInclude,
         loader: 'babel-loader',
       },
-      {
-        test: /\.(woff|woff2|eot|ttf|svg)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'fonts/',
-              publicPath: '../',
-            },
-          },
-        ],
-        include: defaultInclude,
-      },
     ],
   },
   plugins: [

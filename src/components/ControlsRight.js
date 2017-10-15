@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Switch from 'rc-switch'
+import { Repeat } from 'react-feather'
+import Volume from './Volume'
 
 class ControlsRight extends React.Component {
   static propTypes = {
@@ -14,21 +15,25 @@ class ControlsRight extends React.Component {
   }
 
   handleVolumeChange = (e) => {
-    this.props.audio.volume = e.target.value / 100
-    this.setState({
-      volume: e.target.value,
-    })
+    this.props.audio.volume = e.target.value
   }
 
   bindListeners() {
     this.props.audio.addEventListener('volumechange', () => {
+      const { muted, volume } = this.props.audio
       this.setState({
-        volume: this.props.audio.volume * 100,
+        volume,
+        muted,
       })
     })
   }
 
-  handleLoopChange = (loop) => {
+  handleMuteClick = () => {
+    this.props.audio.muted = !this.props.audio.muted
+  }
+
+  handleLoopClick = () => {
+    const loop = !this.props.player.loop
     this.props.player.loop = loop
     this.setState({
       loop,
@@ -36,26 +41,36 @@ class ControlsRight extends React.Component {
   }
 
   state = {
-    volume: this.props.audio.volume * 100,
+    volume: this.props.audio.volume,
+    muted: this.props.audio.muted,
     loop: this.props.player.loop,
   }
 
   render() {
-    const { volume, loop } = this.state
+    const { volume, loop, muted } = this.state
     return (
       <div className="player__controls--right">
-        <Switch
-          prefixCls="player__loop-toggle"
-          checked={loop}
-          onChange={this.handleLoopChange}
+        <button
+          className={`player__button ${loop ? 'player__loop' : 'player__loop--inactive'}`}
+          title={loop ? '取消循环播放' : '循环播放'}
+          onClick={this.handleLoopClick}
+        >
+          <Repeat />
+        </button>
+        <button
           className="player__button"
-        />
+          title={muted ? '取消静音' : '静音'}
+          onClick={this.handleMuteClick}
+        >
+          <Volume volume={volume} muted={muted} />
+        </button>
         <input
           className="player__volume player__range"
           type="range"
-          min={0}
+          min={0.0}
           name="volume"
-          max={100}
+          max={1.0}
+          step={0.01}
           value={volume}
           onChange={this.handleVolumeChange}
         />

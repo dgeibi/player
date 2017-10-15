@@ -34,8 +34,8 @@ main {
 }
 
 .player__button {
-  padding: 2px;
-  margin: 0 3px;
+  padding: 3px;
+  margin: 0;
   display: inline-block;
   border: none;
   background: transparent;
@@ -46,46 +46,24 @@ main {
   outline: 0;
 }
 
-.player__button:focus::before {
+.player__button svg {
+  padding: 1px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+}
+
+.player__button:focus svg {
   border: 1px solid #3da6f1;
 }
 
-.player__button::before {
-  width: 24px;
-  height: 24px;
-  background-size: contain;
-  border: 1px solid transparent;
-  border-radius: 3px;
-  display: block;
-  padding: 0;
-  content: ' ';
-}
-
-.player__button--play::before {
-  background-image: url(../icons/play.svg);
-}
-
-.player__button--pause::before {
-  background-image: url(../icons/pause.svg);
-}
-
-.player__button--prev::before {
-  background-image: url(../icons/skip-back.svg);
-}
-
-.player__button--next::before {
-  background-image: url(../icons/skip-forward.svg);
-}
-
-.player__loop-toggle::before {
-  background-image: url(../icons/repeat.svg);
-  opacity: 0.2;
-}
-
-.player__loop-toggle-checked.player__loop-toggle::before {
-  opacity: 1;
+.player__loop--inactive {
+  opacity: 0.4;
 }
 
 .player__controls {
   overflow: hidden;
+}
+
+.player__volume {
+  width: 60px;
 }
