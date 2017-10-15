@@ -12,48 +12,50 @@ class SongsManager extends React.Component {
     selectedRowKeys: [],
   }
 
+  columns = [
+    {
+      title: '歌曲标题',
+      dataIndex: 'title',
+    },
+    {
+      title: '歌手',
+      dataIndex: 'artist',
+    },
+    {
+      title: '操作',
+      dataIndex: '',
+      key: 'x',
+      render: ({ key }) => (
+        <span data-key={key} onClick={this.handleClick}>
+          <a data-op="delete">删除</a>&nbsp;&nbsp;&nbsp;
+          <a data-op="play">播放</a>
+        </span>
+      ),
+    },
+  ]
+
   onSelectChange = (selectedRowKeys) => {
     this.setState({ selectedRowKeys })
   }
 
-  handleDelete = (e) => {
+  handleClick = (e) => {
     const { player } = this.props
-    player.delete(e.target.dataset.key)
-  }
-
-  handlePlay = (e) => {
-    const { player } = this.props
-    player.play(e.target.dataset.key)
+    const { target } = e
+    const ops = ['play', 'delete']
+    const { op } = target.dataset
+    if (ops.includes(op)) {
+      const { key } = target.parentNode.dataset
+      if (key) {
+        player[op](key)
+      }
+    }
   }
 
   render() {
     const { selectedRowKeys } = this.state
     const { data } = this.props
+    const { columns } = this
 
-    const columns = [
-      {
-        title: '歌曲标题',
-        dataIndex: 'title',
-      },
-      {
-        title: '歌手',
-        dataIndex: 'artist',
-      },
-      {
-        title: '操作',
-        dataIndex: '',
-        key: 'x',
-        render: ({ key }) => (
-          <span>
-            <a data-key={key} onClick={this.handleDelete}>
-              删除
-            </a>&nbsp;&nbsp;&nbsp;<a data-key={key} onClick={this.handlePlay}>
-              播放
-            </a>
-          </span>
-        ),
-      },
-    ]
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
