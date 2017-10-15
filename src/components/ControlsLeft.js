@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Row } from 'antd'
 
 const pad = n => (Number(n) < 10 ? `0${n}` : String(n))
 const convertSecs = s => `${Math.floor(s / 60)}:${pad(Math.floor(s % 60))}`
@@ -72,7 +73,7 @@ class ControlsLeft extends React.Component {
     const { playing } = this.state
     const { currentTime, duration } = this.props.audio
     return (
-      <div className="player__controls--left flex-center flex-middle">
+      <Row className="player__controls--left" type="flex" justify="center" align="middle">
         <span className="player__current-time">{convertSecs(currentTime)}</span>/<span className="player__duration">{convertSecs(duration || 0)}</span>
         <button
           className={`player__button ${playing
@@ -94,7 +95,7 @@ class ControlsLeft extends React.Component {
           title="下一首"
           onClick={this.next}
         />
-      </div>
+      </Row>
     )
   }
 }

@@ -41,6 +41,7 @@ module.exports = (env = {}) => {
             options: {
               minimize: true,
               sourceMap: true,
+              importLoaders: 1,
             },
           },
           { loader: 'postcss-loader', options: { sourceMap: true } },

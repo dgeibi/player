@@ -10,20 +10,26 @@
     "format": "prettier-eslint --write '**/*.{js,scss}'",
     "precommit": "lint-staged"
   },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
   "author": "dgeibi",
   "license": "MIT",
   "dependencies": {
+    "antd": "^2.13.6",
     "id3-parser": "^1.2.0",
     "idb": "^2.0.4",
     "nanoid": "^0.2.2",
+    "prop-types": "^15.6.0",
+    "rc-switch": "^1.5.3",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
-    "uemitter": "0.0.3",
-    "antd": "^2.13.6",
-    "prop-types": "^15.6.0",
-    "react-hot-loader": "^3.0.0"
+    "react-hot-loader": "^3.0.0",
+    "uemitter": "0.0.3"
   },
   "devDependencies": {
+    "autoprefixer": "^7.1.5",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.2.3",
     "babel-loader": "^7.1.2",

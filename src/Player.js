@@ -10,7 +10,14 @@ const FALLBACK_PLAYLIST = '所有歌曲'
 
 class Player {
   constructor({
-    audio, loop, metaDatas, playlists, selectedListID, playingListID, currentTime,
+    audio,
+    loop,
+    metaDatas,
+    playlists,
+    selectedListID,
+    playingListID,
+    currentTime,
+    volume,
   } = {}) {
     Object.assign(this, EventEmitter())
 
@@ -21,6 +28,18 @@ class Player {
     this.metaDatas = new Map(metaDatas)
 
     this.p = false
+
+    this.loop = Boolean(loop)
+    this.playingListID = playingListID || FALLBACK_PLAYLIST
+    this.selectedListID = selectedListID || FALLBACK_PLAYLIST
+    this.currentTime = currentTime || 0
+    this.volume = volume || 0.5
+
+    this.audio.volume = this.volume
+
+    this.audio.addEventListener('volumechange', () => {
+      this.volume = this.audio.volume
+    })
 
     this.audio.addEventListener('loadeddata', () => {
       this.emit('metadata', this.metaDatas.get(this.audio.dataset.key))
@@ -33,11 +52,6 @@ class Player {
     this.audio.addEventListener('timeupdate', () => {
       this.currentTime = this.audio.currentTime
     })
-
-    this.loop = Boolean(loop)
-    this.playingListID = playingListID || FALLBACK_PLAYLIST
-    this.selectedListID = selectedListID || FALLBACK_PLAYLIST
-    this.currentTime = currentTime || 0
 
     /** @type {Map<string, PlayList>} */
     this.playlists = new Map(playlists)
@@ -63,6 +77,7 @@ class Player {
   static async fromStore(audio) {
     const [
       loop,
+      volume,
       playingListID,
       selectedListID,
       currentTime,
@@ -70,6 +85,7 @@ class Player {
       metaDataArr,
     ] = await Promise.all([
       playerStore.get('loop'),
+      playerStore.get('volume'),
       playerStore.get('playingListID'),
       playerStore.get('selectedListID'),
       playerStore.get('currentTime'),
@@ -95,6 +111,7 @@ class Player {
 
     return new Player({
       audio,
+      volume,
       loop,
       selectedListID,
       playingListID,
@@ -154,12 +171,42 @@ class Player {
     })
 
     playlist.save()
+
+    this.emit('songs-update')
   }
 
-  async play() {
-    const playlist = this.playlists.get(this.playingListID)
-    const ret = await playlist.play()
-    if (ret !== false) this.playing = true
+  delete(key, pl) {
+    if (pl && pl !== FALLBACK_PLAYLIST) {
+      const playlist = this.playlists.get(pl)
+
+      if (playlist) {
+        playlist.keys.delete(key)
+        playlist.save()
+        this.emit('songs-update')
+      }
+    } else {
+      [...this.playlists.values()].forEach((playlist) => {
+        playlist.keys.delete(key)
+        playlist.save()
+      })
+
+      this.metaDatas.delete(key)
+      blobStore.delete(key)
+      metaStore.delete(key)
+      this.emit('songs-update')
+    }
+  }
+
+  async play(key, pl) {
+    const playlist = this.playlists.get(pl || this.playingListID)
+    const ret = await playlist.play(key)
+
+    if (ret !== false) {
+      this.playing = true
+      if (pl && this.playingListID !== pl) {
+        this.playingListID = pl
+      }
+    }
     return ret
   }
 
@@ -210,6 +257,7 @@ combine(
   setGet('playingListID'),
   setGet('selectedListID'),
   setGet('loop'),
+  setGet('volume'),
   setGet('currentTime')
 )(Player)
 

@@ -1,3 +1,7 @@
+.player {
+  margin-top: 15px;
+}
+
 .player__controls--right {
   float: right;
 }
@@ -17,6 +21,7 @@
 }
 
 .file-selector {
+  margin-top: 15px;
   display: inline-block;
   position: relative;
   overflow: hidden;
@@ -24,7 +29,7 @@
 
 main {
   padding: 0 10px;
-  max-width: 600px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -45,20 +50,12 @@ main {
   margin: 0 3px;
 }
 
-.player__button:focus {
-  outline: 0;
-}
-
 .player__button--play::before {
   content: url(../icons/play.svg);
 }
 
 .player__button--pause::before {
   content: url(../icons/pause.svg);
-}
-
-.player__button--loop::before {
-  content: url(../icons/repeat.svg);
 }
 
 .player__button--prev::before {
@@ -69,19 +66,15 @@ main {
   content: url(../icons/skip-forward.svg);
 }
 
-.player__loop-toggle {
-  position: absolute;
-  visibility: hidden;
-}
-
-.player__loop-toggle label {
-  position: relative;
-}
-
-.player__loop-toggle + label::before {
+.player__loop-toggle::before {
+  content: url(../icons/repeat.svg);
   opacity: 0.2;
 }
 
-.player__loop-toggle:checked + label::before {
+.player__loop-toggle-checked.player__loop-toggle::before {
   opacity: 1;
+}
+
+.player__controls {
+  overflow: hidden;
 }

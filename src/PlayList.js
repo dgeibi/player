@@ -96,9 +96,18 @@ class PlayList {
     return this._setTrack()
   }
 
-  play() {
-    if (!this.available()) return Promise.resolve(false)
-    if (!this.audio.src) this._setTrack()
+  async play(key) {
+    if (!this.available()) return false
+
+    if (key !== undefined) {
+      const pos = [...this.keys].indexOf(key)
+      if (pos === -1) return false
+      this.pos = pos
+      await this._setTrack()
+    } else if (!this.audio.src) {
+      await this._setTrack()
+    }
+
     return this.audio.play()
   }
 

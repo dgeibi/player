@@ -61,11 +61,8 @@ class Store {
     return dbPromise.then((db) => {
       const tx = db.transaction(storeName)
       const keys = []
-      const store = tx.objectStore(storeName)
-
-      // This would be store.getAllKeys(), but it isn't supported by Edge or Safari.
-      // openKeyCursor isn't supported by Safari, so we fall back
-      ;(store.iterateKeyCursor || store.iterateCursor).call(store, (cursor) => {
+      const store = tx.objectStore(storeName);
+      (store.iterateKeyCursor || store.iterateCursor).call(store, (cursor) => {
         if (!cursor) return
         keys.push(cursor.key)
         cursor.continue()

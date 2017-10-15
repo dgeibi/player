@@ -1,9 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Button } from 'antd'
 
 import ControlsLeft from './components/ControlsLeft'
 import ControlsRight from './components/ControlsRight'
 import ProcessBar from './components/ProcessBar'
+import SongsManager from './components/SongsManager'
 
 class App extends React.Component {
   static propTypes = {
@@ -18,6 +20,12 @@ class App extends React.Component {
 
   state = {
     title: '什么也没有',
+    metadatas: this.getMetaDatas(),
+  }
+
+  getMetaDatas() {
+    const { listOfAll, metaDatas } = this.props.player
+    return [...listOfAll.keys].map(k => metaDatas.get(k))
   }
 
   bindListeners() {
@@ -30,10 +38,20 @@ class App extends React.Component {
         title: ret,
       })
     })
+
+    this.props.player.on('songs-update', () => {
+      this.setState({
+        metadatas: this.getMetaDatas(),
+      })
+    })
   }
 
   saveFileRef = (node) => {
     this.file = node
+  }
+
+  saveDialogRef = (node) => {
+    this.dialog = node
   }
 
   handleFile = (e) => {
@@ -41,17 +59,29 @@ class App extends React.Component {
     e.target.value = null
   }
 
-  handleClick = () => {
+  handleFileBtnClick = () => {
     this.file.click()
+  }
+
+  openDialog = () => {
+    this.dialog.showModal()
+  }
+
+  closeDialog = () => {
+    this.dialog.close()
+  }
+
+  renderPlayList(metadatas) {
+    return metadatas.map(({ title, key }) => <li key={key}>{title}</li>)
   }
 
   render() {
     const { player, audio } = this.props
-    const { title } = this.state
+    const { title, metadatas } = this.state
 
     return (
       <main>
-        <button className="btn file-selector" onClick={this.handleClick}>
+        <Button className="file-selector" onClick={this.handleFileBtnClick}>
           加载本地音乐
           <input
             type="file"
@@ -61,7 +91,7 @@ class App extends React.Component {
             onChange={this.handleFile}
             ref={this.saveFileRef}
           />
-        </button>
+        </Button>
         <div className="player">
           <header className="player__title">{title}</header>
           <div className="player__body">
@@ -73,6 +103,7 @@ class App extends React.Component {
           </div>
           <div className="player__playlist" />
         </div>
+        <SongsManager data={metadatas} player={player} />
       </main>
     )
   }

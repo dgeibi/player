@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import Switch from 'rc-switch'
 
 class ControlsRight extends React.Component {
   static propTypes = {
@@ -27,9 +28,7 @@ class ControlsRight extends React.Component {
     })
   }
 
-  handleLoopChange = (e) => {
-    const loop = e.target.checked
-
+  handleLoopChange = (loop) => {
     this.props.player.loop = loop
     this.setState({
       loop,
@@ -44,21 +43,13 @@ class ControlsRight extends React.Component {
   render() {
     const { volume, loop } = this.state
     return (
-      <div className="player__controls--right flex-center flex-middle">
-        <span>
-          <input
-            type="checkbox"
-            name="loop"
-            id="player__loop-toggle"
-            className="player__loop-toggle"
-            onChange={this.handleLoopChange}
-            checked={loop}
-          />
-          <label
-            htmlFor="player__loop-toggle"
-            className="player__button player__button--loop"
-          />
-        </span>
+      <div className="player__controls--right">
+        <Switch
+          prefixCls="player__loop-toggle"
+          checked={loop}
+          onChange={this.handleLoopChange}
+          className="player__button"
+        />
         <input
           className="player__volume player__range"
           type="range"
