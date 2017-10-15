@@ -5,31 +5,16 @@ class ProcessBar extends React.Component {
   static contextTypes = {
     audio: PropTypes.object.isRequired,
     duration: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-  }
-
-  constructor(...args) {
-    super(...args)
-
-    const { currentTime } = this.context.audio
-    this.state = { currentTime }
+    currentTime: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   }
 
   handleRangeChange = (e) => {
     const { audio } = this.context
-
-    this.setState(
-      {
-        currentTime: e.target.value,
-      },
-      () => {
-        audio.currentTime = this.state.currentTime
-      }
-    )
+    audio.currentTime = e.target.value
   }
 
   render() {
-    const { currentTime } = this.state
-    const { duration } = this.context
+    const { duration, currentTime } = this.context
     return (
       <div>
         <input
