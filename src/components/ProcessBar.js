@@ -2,39 +2,20 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 class ProcessBar extends React.Component {
-  static propTypes = {
+  static contextTypes = {
     audio: PropTypes.object.isRequired,
+    duration: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   }
 
   constructor(...args) {
     super(...args)
-    this.bindListeners()
 
-    const { currentTime, duration } = this.props.audio
-    this.state = { currentTime, duration }
-  }
-
-  bindListeners() {
-    const { audio } = this.props
-    audio.addEventListener('timeupdate', () => {
-      const { currentTime } = audio
-
-      this.setState({
-        currentTime,
-      })
-    })
-
-    audio.addEventListener('loadeddata', () => {
-      const { duration } = audio
-
-      this.setState({
-        duration,
-      })
-    })
+    const { currentTime } = this.context.audio
+    this.state = { currentTime }
   }
 
   handleRangeChange = (e) => {
-    const { audio } = this.props
+    const { audio } = this.context
 
     this.setState(
       {
@@ -47,7 +28,8 @@ class ProcessBar extends React.Component {
   }
 
   render() {
-    const { duration, currentTime } = this.state
+    const { currentTime } = this.state
+    const { duration } = this.context
     return (
       <div>
         <input

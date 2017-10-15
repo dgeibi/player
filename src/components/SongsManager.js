@@ -3,9 +3,12 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 class SongsManager extends React.Component {
+  static contextTypes = {
+    player: PropTypes.object.isRequired,
+  }
+
   static propTypes = {
     data: PropTypes.array.isRequired,
-    player: PropTypes.object.isRequired,
   }
 
   state = {
@@ -39,7 +42,7 @@ class SongsManager extends React.Component {
   }
 
   handleClick = (e) => {
-    const { player } = this.props
+    const { player } = this.context
     const { target } = e
     const ops = ['play', 'delete']
     const { op } = target.dataset
@@ -60,6 +63,7 @@ class SongsManager extends React.Component {
       selectedRowKeys,
       onChange: this.onSelectChange,
     }
+
     const hasSelected = selectedRowKeys.length > 0
     return (
       <div>

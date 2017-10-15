@@ -12,27 +12,27 @@ class ControlsLeft extends React.Component {
     this.bindListeners()
   }
 
-  static propTypes = {
+  static contextTypes = {
     player: PropTypes.object.isRequired,
     audio: PropTypes.object.isRequired,
+    currentTime: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    duration: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   }
 
   state = {
     playing: false,
-    currentTime: this.props.audio.currentTime || 0,
-    duration: this.props.audio.duration || 0,
   }
 
   prev = () => {
-    this.props.player.previous()
+    this.context.player.previous()
   }
 
   next = () => {
-    this.props.player.next()
+    this.context.player.next()
   }
 
   handleToggle = () => {
-    const { player } = this.props
+    const { player } = this.context
     if (this.state.playing) {
       player.pause()
     } else {
@@ -41,7 +41,7 @@ class ControlsLeft extends React.Component {
   }
 
   bindListeners() {
-    const { player, audio } = this.props
+    const { player } = this.context
 
     player.on('play', () => {
       this.setState({
@@ -54,26 +54,12 @@ class ControlsLeft extends React.Component {
         playing: false,
       })
     })
-
-    audio.addEventListener('timeupdate', () => {
-      const { currentTime } = audio
-
-      this.setState({
-        currentTime,
-      })
-    })
-
-    audio.addEventListener('loadeddata', () => {
-      const { duration } = audio
-
-      this.setState({
-        duration,
-      })
-    })
   }
 
   render() {
-    const { playing, currentTime, duration } = this.state
+    const { playing } = this.state
+    const { currentTime, duration } = this.context
+
     return (
       <Row className="player__controls--left" type="flex" justify="center" align="middle">
         <span className="player__current-time">{convertSecs(currentTime)}</span>/<span className="player__duration">{convertSecs(duration)}</span>

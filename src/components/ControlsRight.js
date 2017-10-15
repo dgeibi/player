@@ -4,7 +4,7 @@ import { Repeat } from 'react-feather'
 import Volume from './Volume'
 
 class ControlsRight extends React.Component {
-  static propTypes = {
+  static contextTypes = {
     player: PropTypes.object.isRequired,
     audio: PropTypes.object.isRequired,
   }
@@ -15,12 +15,12 @@ class ControlsRight extends React.Component {
   }
 
   handleVolumeChange = (e) => {
-    this.props.audio.volume = e.target.value
+    this.context.audio.volume = e.target.value
   }
 
   bindListeners() {
-    this.props.audio.addEventListener('volumechange', () => {
-      const { muted, volume } = this.props.audio
+    this.context.audio.addEventListener('volumechange', () => {
+      const { muted, volume } = this.context.audio
       this.setState({
         volume,
         muted,
@@ -29,21 +29,21 @@ class ControlsRight extends React.Component {
   }
 
   handleMuteClick = () => {
-    this.props.audio.muted = !this.props.audio.muted
+    this.context.audio.muted = !this.context.audio.muted
   }
 
   handleLoopClick = () => {
-    const loop = !this.props.player.loop
-    this.props.player.loop = loop
+    const loop = !this.context.player.loop
+    this.context.player.loop = loop
     this.setState({
       loop,
     })
   }
 
   state = {
-    volume: this.props.audio.volume,
-    muted: this.props.audio.muted,
-    loop: this.props.player.loop,
+    volume: this.context.audio.volume,
+    muted: this.context.audio.muted,
+    loop: this.context.player.loop,
   }
 
   render() {
