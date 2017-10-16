@@ -52,8 +52,8 @@ class SongsManager extends React.Component {
     const { playlists, listOfAll } = this.player
 
     const ret = [listOfAll.title]
+    // eslint-disable-next-line no-restricted-syntax
     for (const { title, keys } of playlists.values()) {
-      // eslint-disable-line no-restricted-syntax
       if (listOfAll.title !== title && keys.size > 0) {
         ret.push(title)
       }
