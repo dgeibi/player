@@ -7,10 +7,12 @@ import ControlsRight from './ControlsRight'
 import ProcessBar from './ProcessBar'
 import SongsManager from './SongsManager'
 
+import eventObservable from '../utils/event-observable'
+
 class App extends React.Component {
-  constructor(...args) {
-    super(...args)
-    this.bindListeners()
+  static contextTypes = {
+    player: PropTypes.object.isRequired,
+    audio: PropTypes.object.isRequired,
   }
 
   state = {
@@ -18,18 +20,15 @@ class App extends React.Component {
     metadatas: this.getMetaDatas(),
   }
 
-  static contextTypes = {
-    player: PropTypes.object.isRequired,
-    audio: PropTypes.object.isRequired,
-  }
+  playerEvents = eventObservable(this.context.player)
 
   getMetaDatas() {
     const { listOfAll, metaDatas } = this.context.player
     return [...listOfAll.keys].map(k => metaDatas.get(k))
   }
 
-  bindListeners() {
-    this.context.player.on('metadata', (data) => {
+  componentWillMount() {
+    this.playerEvents.on('metadata', (data) => {
       const { artist, title } = data
       let ret = title
       if (artist) ret += ` - ${artist}`
@@ -38,11 +37,15 @@ class App extends React.Component {
       })
     })
 
-    this.context.player.on('songs-update', () => {
+    this.playerEvents.on('songs-update', () => {
       this.setState({
         metadatas: this.getMetaDatas(),
       })
     })
+  }
+
+  componentWillUnmount() {
+    this.playerEvents.removeAllObservables()
   }
 
   saveFileRef = (node) => {

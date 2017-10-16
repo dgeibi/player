@@ -3,15 +3,12 @@ import PropTypes from 'prop-types'
 import { Row } from 'antd'
 import { Pause, Play, SkipBack, SkipForward } from 'react-feather'
 
+import eventObservable from '../utils/event-observable'
+
 const pad = n => (Number(n) < 10 ? `0${n}` : String(n))
-const convertSecs = s => `${Math.floor(s / 60)}:${pad(Math.floor(s % 60))}`
+const convertSecs = s => `${Math.floor(s / 60) || 0}:${pad(Math.floor(s % 60) || 0)}`
 
 class ControlsLeft extends React.Component {
-  constructor(...args) {
-    super(...args)
-    this.bindListeners()
-  }
-
   static contextTypes = {
     player: PropTypes.object.isRequired,
     audio: PropTypes.object.isRequired,
@@ -19,8 +16,9 @@ class ControlsLeft extends React.Component {
     duration: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   }
 
+  playerEvents = eventObservable(this.context.player)
   state = {
-    playing: false,
+    playing: this.context.player.playing,
   }
 
   prev = () => {
@@ -40,16 +38,18 @@ class ControlsLeft extends React.Component {
     }
   }
 
-  bindListeners() {
-    const { player } = this.context
+  componentWillUnmount() {
+    this.playerEvents.removeAllObservables()
+  }
 
-    player.on('play', () => {
+  componentWillMount() {
+    this.playerEvents.on('play', () => {
       this.setState({
         playing: true,
       })
     })
 
-    player.on('pause', () => {
+    this.playerEvents.on('pause', () => {
       this.setState({
         playing: false,
       })

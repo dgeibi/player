@@ -9,22 +9,23 @@ class ControlsRight extends React.Component {
     audio: PropTypes.object.isRequired,
   }
 
-  constructor(...args) {
-    super(...args)
-    this.bindListeners()
-  }
-
   handleVolumeChange = (e) => {
     this.context.audio.volume = e.target.value
   }
 
-  bindListeners() {
-    this.context.audio.addEventListener('volumechange', () => {
-      const { muted, volume } = this.context.audio
-      this.setState({
-        volume,
-        muted,
-      })
+  componentWillMount() {
+    this.context.audio.addEventListener('volumechange', this.updateVolume)
+  }
+
+  componentWillUnmount() {
+    this.context.audio.removeEventListener('volumechange', this.updateVolume)
+  }
+
+  updateVolume = () => {
+    const { muted, volume } = this.context.audio
+    this.setState({
+      volume,
+      muted,
     })
   }
 

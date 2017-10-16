@@ -1,18 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import eventObservable from '../utils/event-observable'
 
 export default class PlayerProvider extends React.Component {
-  constructor(...args) {
-    super(...args)
-
-    const { currentTime, duration } = this.props.audio
-    this.state = {
-      currentTime: currentTime || 0,
-      duration: duration || 0,
-    }
-    this.bindListeners()
-  }
-
   static childContextTypes = {
     player: PropTypes.object,
     audio: PropTypes.object,
@@ -29,23 +19,32 @@ export default class PlayerProvider extends React.Component {
     ]),
   }
 
-  bindListeners() {
-    const { audio } = this.props
-    audio.addEventListener('timeupdate', () => {
-      const { currentTime } = audio
+  audioEvents = eventObservable(this.props.audio, true)
+  state = {
+    currentTime: this.props.audio.currentTime || 0,
+    duration: this.props.audio.duration || 0,
+  }
+
+  componentWillMount() {
+    this.audioEvents.addEventListener('timeupdate', () => {
+      const { currentTime } = this.props.audio
 
       this.setState({
         currentTime,
       })
     })
 
-    audio.addEventListener('loadeddata', () => {
-      const { duration } = audio
+    this.audioEvents.addEventListener('loadeddata', () => {
+      const { duration } = this.props.audio
 
       this.setState({
         duration,
       })
     })
+  }
+
+  componentWillUnmount() {
+    this.audioEvents.removeAllObservables()
   }
 
   getChildContext() {
