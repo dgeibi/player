@@ -43,15 +43,9 @@ class ControlsLeft extends React.Component {
   }
 
   componentWillMount() {
-    this.playerEvents.on('play', () => {
+    this.playerEvents.on('playing-change', (playing) => {
       this.setState({
-        playing: true,
-      })
-    })
-
-    this.playerEvents.on('pause', () => {
-      this.setState({
-        playing: false,
+        playing,
       })
     })
   }

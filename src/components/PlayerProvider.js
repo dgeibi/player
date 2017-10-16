@@ -19,6 +19,7 @@ export default class PlayerProvider extends React.Component {
     ]),
   }
 
+  playerEvents = eventObservable(this.props.player)
   audioEvents = eventObservable(this.props.audio, true)
   state = {
     currentTime: this.props.audio.currentTime || 0,
@@ -41,10 +42,17 @@ export default class PlayerProvider extends React.Component {
         duration,
       })
     })
+
+    this.playerEvents.on('empty', () => {
+      this.setState({
+        duration: 0,
+      })
+    })
   }
 
   componentWillUnmount() {
     this.audioEvents.removeAllObservables()
+    this.playerEvents.removeAllObservables()
   }
 
   getChildContext() {

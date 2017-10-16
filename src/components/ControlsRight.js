@@ -9,42 +9,49 @@ class ControlsRight extends React.Component {
     audio: PropTypes.object.isRequired,
   }
 
+  audio = this.context.audio
+  player = this.context.player
+
   handleVolumeChange = (e) => {
-    this.context.audio.volume = e.target.value
+    this.audio.volume = e.target.value
   }
 
   componentWillMount() {
-    this.context.audio.addEventListener('volumechange', this.updateVolume)
+    this.audio.addEventListener('volumechange', this.updateVolume)
+    this.player.on('loop-change', this.changeLoop)
   }
 
   componentWillUnmount() {
-    this.context.audio.removeEventListener('volumechange', this.updateVolume)
+    this.audio.removeEventListener('volumechange', this.updateVolume)
+    this.player.removeListener('loop-change', this.changeLoop)
   }
 
   updateVolume = () => {
-    const { muted, volume } = this.context.audio
+    const { muted, volume } = this.audio
     this.setState({
       volume,
       muted,
     })
   }
 
-  handleMuteClick = () => {
-    this.context.audio.muted = !this.context.audio.muted
-  }
-
-  handleLoopClick = () => {
-    const loop = !this.context.player.loop
-    this.context.player.loop = loop
+  changeLoop = (loop) => {
     this.setState({
       loop,
     })
   }
 
+  handleMuteClick = () => {
+    this.audio.muted = !this.audio.muted
+  }
+
+  handleLoopClick = () => {
+    this.player.loop = !this.state.loop
+  }
+
   state = {
-    volume: this.context.audio.volume,
-    muted: this.context.audio.muted,
-    loop: this.context.player.loop,
+    volume: this.audio.volume,
+    muted: this.audio.muted,
+    loop: this.player.loop,
   }
 
   render() {

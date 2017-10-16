@@ -1,18 +1,23 @@
-import { Table } from 'antd'
+import { Button, Table, Modal, AutoComplete, Select } from 'antd'
 import React from 'react'
 import PropTypes from 'prop-types'
 
+const { Option } = Select
+
+const autoCompleteFilter = (inputValue, option) =>
+  option.props.children.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
 class SongsManager extends React.Component {
   static contextTypes = {
     player: PropTypes.object.isRequired,
   }
 
-  static propTypes = {
-    data: PropTypes.array.isRequired,
-  }
-
+  player = this.context.player
   state = {
     selectedRowKeys: [],
+    selectPlayListVisible: false,
+    selectedListID: this.player.selectedListID,
+    metaDatas: this.getMetaDatas(),
+    lists: this.getLists(),
   }
 
   columns = [
@@ -29,7 +34,7 @@ class SongsManager extends React.Component {
       dataIndex: '',
       key: 'x',
       render: ({ key }) => (
-        <span data-key={key} onClick={this.handleClick}>
+        <span data-key={key} onClick={this.handleItemClick}>
           <a data-op="delete">删除</a>&nbsp;&nbsp;&nbsp;
           <a data-op="play">播放</a>
         </span>
@@ -37,45 +42,194 @@ class SongsManager extends React.Component {
     },
   ]
 
-  onSelectChange = (selectedRowKeys) => {
+  getMetaDatas() {
+    const { metaDatas, selectedListID, playlists } = this.player
+    const playlist = playlists.get(selectedListID)
+    return [...playlist.keys].map(k => metaDatas.get(k))
+  }
+
+  getLists() {
+    const { playlists, listOfAll } = this.player
+
+    const ret = [listOfAll.title]
+    for (const { title, keys } of playlists.values()) {
+      // eslint-disable-line no-restricted-syntax
+      if (listOfAll.title !== title && keys.size > 0) {
+        ret.push(title)
+      }
+    }
+    return ret
+  }
+
+  componentWillMount() {
+    this.player.on('songs-update', this.updateMetaData)
+    this.player.on('selectedlistid-change', this.updatesSelectedListID)
+  }
+
+  componentWillUnmount() {
+    this.player.removeListener('songs-update', this.updateMetaData)
+    this.player.removeListener('selectedlistid-change', this.updatesSelectedListID)
+  }
+
+  handleTableSelectedChange = (selectedRowKeys) => {
     this.setState({ selectedRowKeys })
   }
 
-  handleClick = (e) => {
-    const { player } = this.context
+  handleItemClick = (e) => {
+    const { player } = this
     const { target } = e
-    const ops = ['play', 'delete']
     const { op } = target.dataset
-    if (ops.includes(op)) {
-      const { key } = target.parentNode.dataset
-      if (key) {
-        player[op](key)
+    const { key } = target.parentNode.dataset
+    if (key) {
+      if (op === 'delete') {
+        player.delete(key, this.state.selectedListID)
+        if (this.state.selectedRowKeys.includes(key)) {
+          this.setState({
+            selectedRowKeys: this.state.selectedRowKeys.filter(k => k !== key),
+          })
+        }
+      } else if (op === 'play') {
+        player.play(key, this.state.selectedListID)
       }
     }
   }
 
+  handleDeleteClick = () => {
+    const { selectedRowKeys, selectedListID } = this.state
+    this.setState(
+      {
+        selectedRowKeys: [],
+      },
+      () => {
+        this.player.delete(selectedRowKeys, selectedListID)
+      }
+    )
+  }
+
+  showSelectPlayListModal = () => {
+    this.setState({
+      selectPlayListVisible: true,
+      playlistInputed: '',
+    })
+  }
+
+  handleModalCancel = () => {
+    this.setState({
+      selectPlayListVisible: false,
+    })
+  }
+
+  handleModalConfirm = () => {
+    const { selectedRowKeys, playlistInputed } = this.state
+    this.setState(
+      {
+        selectPlayListVisible: false,
+        selectedRowKeys: [],
+      },
+      () => {
+        this.player.add(selectedRowKeys, playlistInputed)
+      }
+    )
+  }
+
+  handleModalInputChange = (playlistInputed) => {
+    this.setState({
+      playlistInputed,
+    })
+  }
+
+  updateMetaData = () => {
+    this.setState({
+      metaDatas: this.getMetaDatas(),
+      lists: this.getLists(),
+    })
+  }
+
+  updatesSelectedListID = (selectedListID) => {
+    this.setState({
+      selectedListID,
+      metaDatas: this.getMetaDatas(),
+    })
+  }
+
+  handlePlayListSelect = (selectedListID) => {
+    if (this.state.selectedListID !== selectedListID) {
+      this.player.selectedListID = selectedListID
+    }
+  }
+
   render() {
-    const { selectedRowKeys } = this.state
-    const { data } = this.props
+    const {
+      selectedRowKeys,
+      selectPlayListVisible,
+      playlistInputed,
+      metaDatas,
+      selectedListID,
+      lists,
+    } = this.state
     const { columns } = this
 
     const rowSelection = {
       selectedRowKeys,
-      onChange: this.onSelectChange,
+      onChange: this.handleTableSelectedChange,
     }
 
     const hasSelected = selectedRowKeys.length > 0
     return (
       <div>
-        <div style={{ marginTop: 16 }}>
+        <div style={{ margin: '16px 0px' }}>
           <span style={{ marginLeft: 8 }}>
             {hasSelected ? `已选择 ${selectedRowKeys.length} 首` : ''}
           </span>
         </div>
+        <div style={{ marginBottom: 16 }}>
+          <Select
+            style={{ width: 100 }}
+            value={selectedListID}
+            placeholder="切换歌单"
+            onChange={this.handlePlayListSelect}
+            children={lists.map(l => <Option key={l}>{l}</Option>)}
+          />{' '}
+          <Button type="danger" onClick={this.handleDeleteClick} disabled={!hasSelected}>
+            删除
+          </Button>{' '}
+          <Button onClick={this.showSelectPlayListModal} disabled={!hasSelected}>
+            收藏到歌单
+          </Button>
+          <Modal
+            visible={selectPlayListVisible}
+            title="收藏到歌单"
+            onOk={this.handleModalConfirm}
+            onCancel={this.handleModalCancel}
+            footer={[
+              <Button key="back" size="large" onClick={this.handleModalCancel}>
+                取消
+              </Button>,
+              <Button
+                key="submit"
+                type="primary"
+                size="large"
+                onClick={this.handleModalConfirm}
+              >
+                确定
+              </Button>,
+            ]}
+          >
+            <AutoComplete
+              style={{ width: 200 }}
+              dataSource={lists.filter(l => l !== this.player.listOfAll.title)}
+              placeholder="输入歌单名称"
+              onChange={this.handleModalInputChange}
+              value={playlistInputed}
+              filterOption={autoCompleteFilter}
+            />
+          </Modal>
+        </div>
+
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={data}
+          dataSource={metaDatas}
           size="small"
         />
       </div>

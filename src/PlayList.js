@@ -88,7 +88,11 @@ class PlayList {
 
   save() {
     const { title, keys, pos } = this
-    playListStore.setValue({ title, keys, pos })
+    if (keys.size > 0) {
+      playListStore.setValue({ title, keys, pos })
+    } else {
+      playListStore.delete(title)
+    }
   }
 
   setTrack() {
@@ -104,7 +108,7 @@ class PlayList {
       if (pos === -1) return false
       this.pos = pos
       await this._setTrack()
-    } else if (!this.audio.src) {
+    } else if (!this.audio.src || !this.keys.has(this.audio.dataset.key)) {
       await this._setTrack()
     }
 

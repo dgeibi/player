@@ -9,26 +9,24 @@ import SongsManager from './SongsManager'
 
 import eventObservable from '../utils/event-observable'
 
+const TITLE_FALLBACK = '什么也没有'
 class App extends React.Component {
   static contextTypes = {
     player: PropTypes.object.isRequired,
     audio: PropTypes.object.isRequired,
   }
 
+  player = this.context.player
   state = {
-    title: '什么也没有',
-    metadatas: this.getMetaDatas(),
+    title: TITLE_FALLBACK,
+    playingList: this.player.playingListID,
   }
 
-  playerEvents = eventObservable(this.context.player)
-
-  getMetaDatas() {
-    const { listOfAll, metaDatas } = this.context.player
-    return [...listOfAll.keys].map(k => metaDatas.get(k))
-  }
+  playerEvents = eventObservable(this.player)
 
   componentWillMount() {
     this.playerEvents.on('metadata', (data) => {
+      if (!data) return
       const { artist, title } = data
       let ret = title
       if (artist) ret += ` - ${artist}`
@@ -38,8 +36,17 @@ class App extends React.Component {
     })
 
     this.playerEvents.on('songs-update', () => {
+      const { playingList } = this.state
+      if (this.player.playlists.get(playingList).keys.size < 1) {
+        this.setState({
+          title: TITLE_FALLBACK,
+        })
+      }
+    })
+
+    this.playerEvents.on('playinglistid-change', (playingList) => {
       this.setState({
-        metadatas: this.getMetaDatas(),
+        playingList,
       })
     })
   }
@@ -53,7 +60,7 @@ class App extends React.Component {
   }
 
   handleFile = (e) => {
-    this.context.player.addFiles(e.target.files)
+    this.player.addFiles(e.target.files)
     e.target.value = null
   }
 
@@ -62,7 +69,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { title, metadatas } = this.state
+    const { title, playingList } = this.state
 
     return (
       <main>
@@ -78,7 +85,10 @@ class App extends React.Component {
           />
         </Button>
         <div className="player">
-          <header className="player__title">{title}</header>
+          <header className="player__title">
+            <h3>{title}</h3>
+            <section>正在播放歌单：{playingList}</section>
+          </header>
           <div className="player__body">
             <ProcessBar />
             <div className="player__controls">
@@ -88,7 +98,7 @@ class App extends React.Component {
           </div>
           <div className="player__playlist" />
         </div>
-        <SongsManager data={metadatas} />
+        <SongsManager />
       </main>
     )
   }
