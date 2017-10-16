@@ -22,6 +22,17 @@ class Store {
         .get(key))
   }
 
+  /**
+   * @param {Array<string>} keys
+   */
+  pick(keys) {
+    return Promise.all(keys.map(x => this.get(x))).then(values =>
+      values.reduce((o, v, i) => {
+        o[keys[i]] = v // eslint-disable-line no-param-reassign
+        return o
+      }, {}))
+  }
+
   set(key, val) {
     const { dbPromise, storeName } = this
     return dbPromise.then((db) => {

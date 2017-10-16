@@ -8,6 +8,13 @@ import { blobStore, playListStore, playerStore, metaStore } from './stores'
 
 const FALLBACK_PLAYLIST = '所有歌曲'
 
+@combine(
+  setGet('playingListID'),
+  setGet('selectedListID'),
+  setGet('loop'),
+  setGet('volume'),
+  setGet('currentTime')
+)
 class Player {
   constructor({
     audio,
@@ -18,8 +25,10 @@ class Player {
     playingListID,
     currentTime,
     volume,
+    emitter,
   } = {}) {
-    Object.assign(this, EventEmitter())
+    this.emitter = emitter || EventEmitter()
+    Object.assign(this, this.emitter)
 
     /** @type {HTMLAudioElement} */
     this.audio = audio || new Audio()
@@ -74,26 +83,22 @@ class Player {
       .catch(() => {})
   }
 
-  static async fromStore(audio) {
-    const [
-      loop,
-      volume,
-      playingListID,
-      selectedListID,
-      currentTime,
-      playlistOpts,
-      metaDataArr,
-    ] = await Promise.all([
-      playerStore.get('loop'),
-      playerStore.get('volume'),
-      playerStore.get('playingListID'),
-      playerStore.get('selectedListID'),
-      playerStore.get('currentTime'),
+  static async fromStore(opts) {
+    const [playerOpts, playlistOpts, metaDataArr] = await Promise.all([
+      playerStore.pick([
+        'loop',
+        'volume',
+        'playingListID',
+        'selectedListID',
+        'currentTime',
+      ]),
       playListStore.getAll(),
       metaStore.getAll(),
     ])
 
     const metaDatas = metaDataArr.reduce((map, x) => map.set(x.key, x), new Map())
+
+    const audio = opts.audio || new Audio()
 
     const playlists = playlistOpts.reduce(
       (map, { title, keys, pos }) =>
@@ -110,14 +115,11 @@ class Player {
     )
 
     return new Player({
+      ...opts,
+      ...playerOpts,
       audio,
-      volume,
-      loop,
-      selectedListID,
-      playingListID,
       playlists,
       metaDatas,
-      currentTime,
     })
   }
 
@@ -252,13 +254,5 @@ function setGet(key) {
     return F
   }
 }
-
-combine(
-  setGet('playingListID'),
-  setGet('selectedListID'),
-  setGet('loop'),
-  setGet('volume'),
-  setGet('currentTime')
-)(Player)
 
 export default Player
