@@ -89,10 +89,9 @@ class PlayList {
   save() {
     const { title, keys, pos } = this
     if (keys.size > 0) {
-      playListStore.setValue({ title, keys, pos })
-    } else {
-      playListStore.delete(title)
+      return playListStore.setValue({ title, keys, pos })
     }
+    return playListStore.delete(title)
   }
 
   setTrack() {

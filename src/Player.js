@@ -174,6 +174,7 @@ class Player {
 
     const playlist = this.listOfAll
 
+    const promises = []
     tags.forEach((tag, index) => {
       const { album, artist, title } = tag
       const key = nanoid()
@@ -190,19 +191,17 @@ class Player {
       info.title = info.title || info.name.replace(/\.\S*?$/, '')
 
       playlist.add(key)
-
       metaDatas.set(key, info)
-      metaStore.setValue(info)
-
-      blobStore.set(key, file)
+      promises.push(metaStore.setValue(info))
+      promises.push(blobStore.set(key, file))
     })
+    promises.push(playlist.save())
 
-    playlist.save()
-
+    await Promise.all(promises)
     this.emit('songs-update')
   }
 
-  add(key, pl) {
+  async add(key, pl) {
     if (!key) return
 
     const addKey = (set) => {
@@ -218,19 +217,21 @@ class Player {
         this.playlists.set(pl, playlist)
       }
       addKey(playlist.keys)
-      playlist.save()
+      await playlist.save()
       this.emit('songs-update')
     }
   }
 
-  delete(key, pl) {
+  async delete(key, pl) {
     if (!key) return
 
+    const rets = []
     const deleteKey = (set, callback) => {
       const hasCallback = Boolean(callback)
       const deleteX = (x) => {
         const ret = set.delete(x)
         if (hasCallback) callback(x)
+        rets.push(ret)
         return ret
       }
       if (Array.isArray(key)) {
@@ -250,7 +251,7 @@ class Player {
       const playlist = this.playlists.get(pl)
       if (playlist) {
         deleteKey(playlist.keys, skipTrack)
-        playlist.save()
+        await playlist.save()
         this.emit('songs-update')
       }
     } else {
@@ -262,10 +263,12 @@ class Player {
       deleteKey(this.metaDatas)
       deleteKey(blobStore)
       deleteKey(metaStore)
+
+      await Promise.all(rets)
       this.emit('songs-update')
     }
     if (toSkip) {
-      this.skip('next', false)
+      await this.skip('next', false)
     }
   }
 

@@ -67,3 +67,8 @@ main {
 .player__volume {
   width: 60px;
 }
+
+.ant-table-thead > tr > th.ant-table-selection-column {
+  padding-left: 0;
+  padding-right: 0;
+}

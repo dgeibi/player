@@ -19,6 +19,8 @@ class SongsManager extends React.Component {
     selectedListID: this.player.selectedListID,
     metaDatas: this.getMetaDatas(),
     lists: this.getLists(),
+    confirmLoading: false,
+    deleteBtnLoading: false,
   }
 
   columns = [
@@ -33,6 +35,8 @@ class SongsManager extends React.Component {
     {
       title: '操作',
       dataIndex: '',
+      fixed: 'right',
+      width: 80,
       key: 'x',
       render: ({ key }) => (
         <span data-key={key} onClick={this.handleItemClick}>
@@ -80,14 +84,14 @@ class SongsManager extends React.Component {
     this.setState({ selectedRowKeys })
   }
 
-  handleItemClick = (e) => {
+  handleItemClick = async (e) => {
     const { player } = this
     const { target } = e
     const { op } = target.dataset
     const { key } = target.parentNode.dataset
     if (key) {
       if (op === 'delete') {
-        player.delete(key, this.state.selectedListID)
+        await player.delete(key, this.state.selectedListID)
         if (this.state.selectedRowKeys.includes(key)) {
           this.setState({
             selectedRowKeys: this.state.selectedRowKeys.filter(k => k !== key),
@@ -99,16 +103,16 @@ class SongsManager extends React.Component {
     }
   }
 
-  handleDeleteClick = () => {
+  handleDeleteClick = async () => {
     const { selectedRowKeys, selectedListID } = this.state
-    this.setState(
-      {
-        selectedRowKeys: [],
-      },
-      () => {
-        this.player.delete(selectedRowKeys, selectedListID)
-      }
-    )
+    this.setState({
+      deleteBtnLoading: true,
+    })
+    await this.player.delete(selectedRowKeys, selectedListID)
+    this.setState({
+      selectedRowKeys: [],
+      deleteBtnLoading: false,
+    })
   }
 
   showSelectPlayListModal = () => {
@@ -124,17 +128,17 @@ class SongsManager extends React.Component {
     })
   }
 
-  handleModalConfirm = () => {
+  handleModalConfirm = async () => {
     const { selectedRowKeys, playlistInputed } = this.state
-    this.setState(
-      {
-        selectPlayListVisible: false,
-        selectedRowKeys: [],
-      },
-      () => {
-        this.player.add(selectedRowKeys, playlistInputed)
-      }
-    )
+    this.setState({
+      confirmLoading: true,
+    })
+    await this.player.add(selectedRowKeys, playlistInputed)
+    this.setState({
+      selectPlayListVisible: false,
+      confirmLoading: false,
+      selectedRowKeys: [],
+    })
   }
 
   handleModalInputChange = (playlistInputed) => {
@@ -173,6 +177,8 @@ class SongsManager extends React.Component {
       metaDatas,
       selectedListID,
       lists,
+      confirmLoading,
+      deleteBtnLoading,
     } = this.state
     const { columns } = this
 
@@ -197,7 +203,12 @@ class SongsManager extends React.Component {
             onChange={this.handlePlayListSelect}
             children={lists.map(l => <Option key={l}>{l}</Option>)}
           />{' '}
-          <Button type="danger" onClick={this.handleDeleteClick} disabled={!hasSelected}>
+          <Button
+            type="danger"
+            loading={deleteBtnLoading}
+            onClick={this.handleDeleteClick}
+            disabled={!hasSelected}
+          >
             删除
           </Button>{' '}
           <Button onClick={this.showSelectPlayListModal} disabled={!hasSelected}>
@@ -217,6 +228,7 @@ class SongsManager extends React.Component {
                 type="primary"
                 size="large"
                 onClick={this.handleModalConfirm}
+                loading={confirmLoading}
               >
                 确定
               </Button>,
@@ -224,10 +236,12 @@ class SongsManager extends React.Component {
           >
             <AutoComplete
               style={{ width: 200 }}
-              dataSource={lists.filter(l => l !== this.player.listOfAll.title)}
+              dataSource={lists.filter(l => l !== this.player.listOfAll.title && l !== playlistInputed)}
               placeholder="输入歌单名称"
               onChange={this.handleModalInputChange}
               value={playlistInputed}
+              disabled={!hasSelected}
+              allowClear
               filterOption={autoCompleteFilter}
             />
           </Modal>
@@ -238,6 +252,7 @@ class SongsManager extends React.Component {
           columns={columns}
           dataSource={metaDatas}
           size="small"
+          scroll={{ x: 450 }}
         />
       </div>
     )

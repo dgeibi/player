@@ -21,6 +21,7 @@ class App extends React.Component {
   state = {
     title: TITLE_FALLBACK,
     playingListID: this.player.playingListID,
+    loading: false,
   }
 
   playerEvents = eventObservable(this.player)
@@ -61,8 +62,14 @@ class App extends React.Component {
     this.file = node
   }
 
-  handleFile = (e) => {
-    this.player.addFiles(e.target.files)
+  handleFile = async (e) => {
+    this.setState({
+      loading: true,
+    })
+    await this.player.addFiles(e.target.files)
+    this.setState({
+      loading: false,
+    })
     e.target.value = null
   }
 
@@ -71,11 +78,15 @@ class App extends React.Component {
   }
 
   render() {
-    const { title, playingListID } = this.state
+    const { title, playingListID, loading } = this.state
 
     return (
       <main>
-        <Button className="file-selector" onClick={this.handleFileBtnClick}>
+        <Button
+          loading={loading}
+          className="file-selector"
+          onClick={this.handleFileBtnClick}
+        >
           加载本地音乐
           <input
             type="file"
