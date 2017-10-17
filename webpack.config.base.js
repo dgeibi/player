@@ -1,9 +1,10 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const pkg = require('./package')
 const customCamel2Dash = require('./config/babel/customCamel2Dash')
 
-const output = path.resolve(__dirname, 'docs')
+const DIST_DIR = path.resolve(__dirname, pkg.dist_dir)
 const defaultInclude = [path.resolve(__dirname, 'src')]
 
 module.exports = {
@@ -12,7 +13,7 @@ module.exports = {
     app: './src/index.js',
   },
   output: {
-    path: output,
+    path: DIST_DIR,
     filename: '[name].js',
     chunkFilename: '[name].bundle.js',
   },
@@ -47,5 +48,10 @@ module.exports = {
       title: 'Player',
       template: 'src/template.ejs',
     }),
+    new CopyWebpackPlugin([
+      {
+        from: 'src/assets/',
+      },
+    ]),
   ],
 }

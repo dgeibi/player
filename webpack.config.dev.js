@@ -1,7 +1,8 @@
 const webpack = require('webpack')
 const path = require('path')
+const pkg = require('./package')
 
-const output = path.resolve(__dirname, 'docs')
+const output = path.resolve(__dirname, pkg.dist_dir)
 
 module.exports = {
   entry: {

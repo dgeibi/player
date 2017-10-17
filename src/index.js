@@ -1,11 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
+import loadSW from './loadSW'
 import Player from './Player'
 import './styles/style.scss'
 
 import PlayerProvider from './components/PlayerProvider'
 import App from './components/App'
+
+const HOT = module.hot
+if (!HOT) {
+  loadSW()
+}
 
 const render = (ele, hydrate = false) => {
   if (hydrate) {
@@ -26,7 +32,7 @@ const run = async () => {
     </PlayerProvider>
   )
 
-  if (module.hot) {
+  if (HOT) {
     const { AppContainer } = require('react-hot-loader')
 
     render(<AppContainer>

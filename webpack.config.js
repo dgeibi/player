@@ -1,6 +1,5 @@
 const merge = require('webpack-merge')
 const path = require('path')
-
 const css = require('./config/css')
 const defineNodeEnv = require('./config/defineNodeEnv')
 const base = require('./webpack.config.base')

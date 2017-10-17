@@ -4,6 +4,7 @@
   "description": "a simple music player",
   "scripts": {
     "start": "webpack-dev-server",
+    "start:prod": "npm run build && serve dist",
     "build": "webpack --env.production",
     "analyze": "webpack --env.production --json | webpack-bundle-size-analyzer",
     "lint": "eslint .",
@@ -11,6 +12,7 @@
     "format": "prettier-eslint --write '**/*.{js,scss}'",
     "precommit": "lint-staged"
   },
+  "dist_dir": "dist",
   "browserslist": [
     "chrome > 51"
   ],
@@ -43,6 +45,7 @@
     "babel-preset-react": "^7.0.0-beta.3",
     "babel-preset-stage-3": "^7.0.0-beta.3",
     "clean-webpack-plugin": "^0.1.17",
+    "copy-webpack-plugin": "^4.1.1",
     "css-loader": "^0.28.4",
     "eslint": "^4.8.0",
     "eslint-config-airbnb-base": "^12.0.2",
@@ -61,11 +64,13 @@
     "postcss-scss": "^1.0.2",
     "precss": "^2.0.0",
     "prettier-eslint-cli": "^4.4.0",
+    "serve": "^6.3.0",
     "style-loader": "^0.19.0",
     "webpack": "^3.7.1",
     "webpack-bundle-size-analyzer": "^2.7.0",
     "webpack-dev-server": "^2.9.1",
-    "webpack-merge": "^4.1.0"
+    "webpack-merge": "^4.1.0",
+    "workbox-webpack-plugin": "^2.1.0"
   },
   "prettier": {
     "semi": false,
