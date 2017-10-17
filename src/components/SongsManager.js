@@ -12,6 +12,7 @@ class SongsManager extends React.Component {
   }
 
   player = this.context.player
+
   state = {
     selectedRowKeys: [],
     selectPlayListVisible: false,
@@ -63,12 +64,12 @@ class SongsManager extends React.Component {
 
   componentWillMount() {
     this.player.on('songs-update', this.updateMetaData)
-    this.player.on('selectedlistid-change', this.updatesSelectedListID)
+    this.player.on('update', this.updatePlayerState)
   }
 
   componentWillUnmount() {
     this.player.removeListener('songs-update', this.updateMetaData)
-    this.player.removeListener('selectedlistid-change', this.updatesSelectedListID)
+    this.player.removeListener('update', this.updatePlayerState)
   }
 
   handleTableSelectedChange = (selectedRowKeys) => {
@@ -145,11 +146,13 @@ class SongsManager extends React.Component {
     })
   }
 
-  updatesSelectedListID = (selectedListID) => {
-    this.setState({
-      selectedListID,
-      metaDatas: this.getMetaDatas(),
-    })
+  updatePlayerState = (key, value) => {
+    if (key === 'selectedListID') {
+      this.setState({
+        [key]: value,
+        metaDatas: this.getMetaDatas(),
+      })
+    }
   }
 
   handlePlayListSelect = (selectedListID) => {

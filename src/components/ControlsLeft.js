@@ -3,8 +3,6 @@ import PropTypes from 'prop-types'
 import { Row } from 'antd'
 import { Pause, Play, SkipBack, SkipForward } from 'react-feather'
 
-import eventObservable from '../utils/event-observable'
-
 const pad = n => (Number(n) < 10 ? `0${n}` : String(n))
 const convertSecs = s => `${Math.floor(s / 60) || 0}:${pad(Math.floor(s % 60) || 0)}`
 
@@ -12,25 +10,26 @@ class ControlsLeft extends React.Component {
   static contextTypes = {
     player: PropTypes.object.isRequired,
     audio: PropTypes.object.isRequired,
-    currentTime: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     duration: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   }
 
-  playerEvents = eventObservable(this.context.player)
+  audio = this.context.audio
+  player = this.context.player
+
   state = {
-    playing: this.context.player.playing,
+    playing: this.player.playing,
   }
 
   prev = () => {
-    this.context.player.previous()
+    this.player.previous()
   }
 
   next = () => {
-    this.context.player.next()
+    this.player.next()
   }
 
   handleToggle = () => {
-    const { player } = this.context
+    const { player } = this
     if (this.state.playing) {
       player.pause()
     } else {
@@ -39,20 +38,34 @@ class ControlsLeft extends React.Component {
   }
 
   componentWillUnmount() {
-    this.playerEvents.removeAllObservables()
+    this.audio.removeEventListener('timeupdate', this.updateCurrentTime)
+    this.player.removeListener('update', this.updateState)
   }
 
   componentWillMount() {
-    this.playerEvents.on('playing-change', (playing) => {
+    this.audio.addEventListener('timeupdate', this.updateCurrentTime)
+    this.player.on('update', this.updateState)
+  }
+
+  updateState = (key, value) => {
+    if (key === 'playing') {
       this.setState({
-        playing,
+        [key]: value,
       })
+    }
+  }
+
+  updateCurrentTime = () => {
+    const { currentTime } = this.audio
+
+    this.setState({
+      currentTime,
     })
   }
 
   render() {
-    const { playing } = this.state
-    const { currentTime, duration } = this.context
+    const { currentTime, playing } = this.state
+    const { duration } = this.context
 
     return (
       <Row className="player__controls--left" type="flex" justify="center" align="middle">

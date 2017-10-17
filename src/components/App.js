@@ -17,9 +17,10 @@ class App extends React.Component {
   }
 
   player = this.context.player
+
   state = {
     title: TITLE_FALLBACK,
-    playingList: this.player.playingListID,
+    playingListID: this.player.playingListID,
   }
 
   playerEvents = eventObservable(this.player)
@@ -36,17 +37,18 @@ class App extends React.Component {
     })
 
     this.playerEvents.on('songs-update', () => {
-      const { playingList } = this.state
-      if (this.player.playlists.get(playingList).keys.size < 1) {
+      const { playingListID } = this.state
+      if (this.player.playlists.get(playingListID).keys.size < 1) {
         this.setState({
           title: TITLE_FALLBACK,
         })
       }
     })
 
-    this.playerEvents.on('playinglistid-change', (playingList) => {
+    this.playerEvents.on('update', (key, value) => {
+      if (key !== 'playingListID') return
       this.setState({
-        playingList,
+        [key]: value,
       })
     })
   }
@@ -69,7 +71,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { title, playingList } = this.state
+    const { title, playingListID } = this.state
 
     return (
       <main>
@@ -87,7 +89,7 @@ class App extends React.Component {
         <div className="player">
           <header className="player__title">
             <h3>{title}</h3>
-            <section>正在播放歌单：{playingList}</section>
+            <section>正在播放歌单：{playingListID}</section>
           </header>
           <div className="player__body">
             <ProcessBar />

@@ -1,12 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import eventObservable from '../utils/event-observable'
 
 export default class PlayerProvider extends React.Component {
   static childContextTypes = {
     player: PropTypes.object,
     audio: PropTypes.object,
-    currentTime: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     duration: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   }
 
@@ -19,49 +17,40 @@ export default class PlayerProvider extends React.Component {
     ]),
   }
 
-  playerEvents = eventObservable(this.props.player)
-  audioEvents = eventObservable(this.props.audio, true)
   state = {
-    currentTime: this.props.audio.currentTime || 0,
     duration: this.props.audio.duration || 0,
   }
 
   componentWillMount() {
-    this.audioEvents.addEventListener('timeupdate', () => {
-      const { currentTime } = this.props.audio
-
-      this.setState({
-        currentTime,
-      })
-    })
-
-    this.audioEvents.addEventListener('loadeddata', () => {
-      const { duration } = this.props.audio
-
-      this.setState({
-        duration,
-      })
-    })
-
-    this.playerEvents.on('empty', () => {
-      this.setState({
-        duration: 0,
-      })
-    })
+    this.props.audio.addEventListener('loadeddata', this.updateDuration)
+    this.props.player.on('empty', this.resetDuration)
   }
 
   componentWillUnmount() {
-    this.audioEvents.removeAllObservables()
-    this.playerEvents.removeAllObservables()
+    this.props.audio.removeEventListener('loadeddata', this.updateDuration)
+    this.props.player.removeListener('empty', this.resetDuration)
+  }
+
+  updateDuration = () => {
+    const { duration } = this.props.audio
+
+    this.setState({
+      duration,
+    })
+  }
+
+  resetDuration = () => {
+    this.setState({
+      duration: 0,
+    })
   }
 
   getChildContext() {
     const { player, audio } = this.props
-    const { currentTime, duration } = this.state
+    const { duration } = this.state
     return {
       player,
       audio,
-      currentTime,
       duration,
     }
   }

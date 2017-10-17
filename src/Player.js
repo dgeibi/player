@@ -1,35 +1,67 @@
 import EventEmitter from 'uemitter'
 import ID3 from 'id3-parser'
 import nanoid from 'nanoid'
+import isPromise from 'is-promise'
 
-import combine from './utils/combine'
 import PlayList from './PlayList'
 import { blobStore, playListStore, playerStore, metaStore } from './stores'
+import ensureHasKey from './utils/ensure-has-key'
+import ensureNumber from './utils/ensure-number'
 
 const FALLBACK_PLAYLIST = '所有歌曲'
+const FALLBACK_VOL = 0.5
+const FALLBACK_TIME = 0
 
-const ensureHasKey = (map, key) => (map.has(key) ? key : null)
+const withObserve = shouldSet =>
+  function observe(target, key) {
+    return {
+      get() {
+        return this[`_${key}`]
+      },
 
-const store = (key, value) => playerStore.set(key, value)
-const checkList = function checkList(key, value) {
+      set(value) {
+        if (this[key] !== value) {
+          const ret = !shouldSet || shouldSet.call(this, key, value)
+          if (ret) {
+            this[`_${key}`] = value
+            const emit = () => {
+              this.emit('update', key, value)
+            }
+            if (isPromise(ret)) {
+              ret.then(emit).catch(() => {
+                console.error(`fail to save ${key}`)
+              })
+            } else {
+              emit()
+            }
+          }
+        }
+      },
+    }
+  }
+
+const observePlaying = withObserve(function ensurePaused(k, v) {
+  if (!v) this.audio.pause()
+  return true
+})
+
+const savePlayerKey = (key, value) => playerStore.set(key, value)
+const observeWithStore = withObserve(savePlayerKey)
+const observeListID = withObserve(function checkList(key, value) {
   if (this.playlists.has(value)) {
-    return store(key, value)
+    return savePlayerKey(key, value)
   }
   return false
-}
+})
 
-@combine(
-  setGet('playing', function shouldPlayingUpdate(k, v) {
-    if (!v) this.audio.pause()
-    return true
-  }),
-  setGet('selectedListID', checkList),
-  setGet('playingListID', checkList),
-  setGet('loop', store),
-  setGet('volume', store),
-  setGet('currentTime', store)
-)
 class Player {
+  @observePlaying playing = false
+  @observeListID selectedListID = FALLBACK_PLAYLIST
+  @observeListID playingListID = FALLBACK_PLAYLIST
+  @observeWithStore loop = false
+  @observeWithStore volume = FALLBACK_VOL
+  @observeWithStore currentTime = FALLBACK_TIME
+
   constructor({
     audio,
     loop,
@@ -50,8 +82,6 @@ class Player {
     /** @type {Map<string, object>} */
     this.metaDatas = new Map(metaDatas)
 
-    this.p = false
-
     this.loop = Boolean(loop)
 
     /** @type {Map<string, PlayList>} */
@@ -63,11 +93,10 @@ class Player {
       )
     }
 
-    this.playingListID = ensureHasKey(this.playlists, playingListID) || FALLBACK_PLAYLIST
-    this.selectedListID =
-      ensureHasKey(this.playlists, selectedListID) || FALLBACK_PLAYLIST
-    this.currentTime = currentTime || 0
-    this.volume = volume || 0.5
+    this.playingListID = ensureHasKey(this.playlists, playingListID, FALLBACK_PLAYLIST)
+    this.selectedListID = ensureHasKey(this.playlists, selectedListID, FALLBACK_PLAYLIST)
+    this.currentTime = ensureNumber(currentTime, FALLBACK_TIME, 0)
+    this.volume = ensureNumber(volume, FALLBACK_VOL, 0, 1)
 
     this.audio.volume = this.volume
 
@@ -283,24 +312,6 @@ class Player {
 
   next() {
     return this.skip('next')
-  }
-}
-
-function setGet(key, shouldSet) {
-  return (F) => {
-    Object.defineProperty(F.prototype, key, {
-      get() {
-        return this[`_${key}`]
-      },
-
-      set(v) {
-        if (this[key] !== v && (!shouldSet || shouldSet.call(this, key, v))) {
-          this[`_${key}`] = v
-          this.emit(`${String(key).toLowerCase()}-change`, v)
-        }
-      },
-    })
-    return F
   }
 }
 

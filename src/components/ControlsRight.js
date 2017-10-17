@@ -18,12 +18,12 @@ class ControlsRight extends React.Component {
 
   componentWillMount() {
     this.audio.addEventListener('volumechange', this.updateVolume)
-    this.player.on('loop-change', this.changeLoop)
+    this.player.on('update', this.updatePlayerState)
   }
 
   componentWillUnmount() {
     this.audio.removeEventListener('volumechange', this.updateVolume)
-    this.player.removeListener('loop-change', this.changeLoop)
+    this.player.removeListener('update', this.updatePlayerState)
   }
 
   updateVolume = () => {
@@ -34,9 +34,10 @@ class ControlsRight extends React.Component {
     })
   }
 
-  changeLoop = (loop) => {
+  updatePlayerState = (key, value) => {
+    if (key !== 'loop') return
     this.setState({
-      loop,
+      [key]: value,
     })
   }
 
