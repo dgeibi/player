@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -o nounset
+set -o errexit
+
+DIST_DIR=../static/player
+
+npm run build
+rm -rf $DIST_DIR
+cp -r dist $DIST_DIR
+cd $DIST_DIR
+git add .
+git commit -m 'update player'
+git push origin master

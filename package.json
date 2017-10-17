@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "fix": "eslint . --fix",
     "format": "prettier-eslint --write '**/*.{js,scss}'",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "deploy": "sh deploy"
   },
   "dist_dir": "dist",
   "browserslist": [
