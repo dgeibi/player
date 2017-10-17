@@ -3,20 +3,21 @@
     [
       "env",
       {
-        "targets": {
-          "browsers": [
-            "chrome > 55"
-          ]
-        },
         "modules": false,
-        "useBuiltins": true
+        "useBuiltIns": "usage"
       }
     ],
-    "stage-0",
+    "stage-3",
     "react"
   ],
   "plugins": [
-    "transform-decorators-legacy"
+    "transform-decorators-legacy",
+    [
+      "transform-class-properties",
+      {
+        "loose": true
+      }
+    ]
   ],
   "env": {
     "test": {

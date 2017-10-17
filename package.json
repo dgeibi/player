@@ -12,13 +12,13 @@
     "precommit": "lint-staged"
   },
   "browserslist": [
-    "> 1%",
-    "last 2 versions"
+    "chrome > 51"
   ],
   "author": "dgeibi",
   "license": "MIT",
   "dependencies": {
     "antd": "^2.13.6",
+    "babel-polyfill": "^7.0.0-beta.3",
     "id3-parser": "^1.2.0",
     "idb": "^2.0.4",
     "is-promise": "^2.1.0",
@@ -32,16 +32,16 @@
   },
   "devDependencies": {
     "autoprefixer": "^7.1.5",
-    "babel-core": "^6.26.0",
+    "babel-core": "^7.0.0-beta.3",
     "babel-eslint": "^8.0.1",
     "babel-loader": "^7.1.2",
     "babel-minify-webpack-plugin": "^0.2.0",
-    "babel-plugin-import": "^1.6.1",
+    "babel-plugin-import": "^1.6.2",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.10",
-    "babel-preset-env": "^1.6.0",
-    "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
+    "babel-preset-env": "^7.0.0-beta.3",
+    "babel-preset-react": "^7.0.0-beta.3",
+    "babel-preset-stage-3": "^7.0.0-beta.3",
     "clean-webpack-plugin": "^0.1.17",
     "css-loader": "^0.28.4",
     "eslint": "^4.8.0",
