@@ -36,8 +36,12 @@ class SongsManager extends React.Component {
       key: 'x',
       render: ({ key }) => (
         <span data-key={key} onClick={this.handleItemClick}>
-          <a data-op="delete">删除</a>&nbsp;&nbsp;&nbsp;
-          <a data-op="play">播放</a>
+          <a href="#op" data-op="delete">
+            删除
+          </a>&nbsp;&nbsp;&nbsp;
+          <a href="#op" data-op="play">
+            播放
+          </a>
         </span>
       ),
     },
