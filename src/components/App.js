@@ -66,11 +66,12 @@ class App extends React.Component {
     this.setState({
       loading: true,
     })
-    await this.player.addFiles(e.target.files)
+    const files = Array.from(e.target.files)
+    e.target.value = null
+    await this.player.addFiles(files)
     this.setState({
       loading: false,
     })
-    e.target.value = null
   }
 
   handleFileBtnClick = () => {
