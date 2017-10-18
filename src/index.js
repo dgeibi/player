@@ -6,7 +6,7 @@ import Player from './Player'
 import './styles/style.scss'
 
 import PlayerProvider from './components/PlayerProvider'
-import App from './components/App'
+import Shell from './components/Shell'
 
 const HOT = module.hot
 if (!HOT) {
@@ -21,35 +21,31 @@ const render = (ele, hydrate = false) => {
   }
 }
 
-const run = async () => {
-  const audio = document.querySelector('.player__audio')
-  /** @type {Player} */
-  const player = await Player.fromStore({ audio })
+const audio = document.querySelector('.player__audio')
+/** @type {Player} */
+const playerPromise = Player.fromStore({ audio })
 
-  const Root = () => (
-    <PlayerProvider player={player} audio={audio}>
-      <App />
-    </PlayerProvider>
-  )
+const Root = () => (
+  <PlayerProvider playerPromise={playerPromise} audio={audio}>
+    <Shell />
+  </PlayerProvider>
+)
 
-  if (HOT) {
-    const { AppContainer } = require('react-hot-loader')
+if (HOT) {
+  const { AppContainer } = require('react-hot-loader')
 
-    render(<AppContainer>
-      <Root />
-    </AppContainer>)
+  render(<AppContainer>
+    <Root />
+  </AppContainer>)
 
-    module.hot.accept(['./components/App', './components/PlayerProvider'], () => {
-      render(
-        <AppContainer>
-          <Root />
-        </AppContainer>,
-        true
-      )
-    })
-  } else {
-    render(<Root />)
-  }
+  module.hot.accept(['./components/Shell', './components/PlayerProvider'], () => {
+    render(
+      <AppContainer>
+        <Root />
+      </AppContainer>,
+      true
+    )
+  })
+} else {
+  render(<Root />)
 }
-
-run()

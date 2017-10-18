@@ -9,7 +9,7 @@ export default class PlayerProvider extends React.Component {
   }
 
   static propTypes = {
-    player: PropTypes.object.isRequired,
+    playerPromise: PropTypes.object.isRequired,
     audio: PropTypes.object.isRequired,
     children: PropTypes.oneOfType([
       PropTypes.element,
@@ -17,18 +17,42 @@ export default class PlayerProvider extends React.Component {
     ]),
   }
 
+  constructor(...args) {
+    super(...args)
+
+    this.props.playerPromise.then((player) => {
+      this.setState({
+        player,
+      })
+    })
+  }
+
   state = {
     duration: this.props.audio.duration || 0,
+    player: null,
   }
 
-  componentWillMount() {
+  async componentWillReceiveProps(nextProps) {
+    if (nextProps.playerPromise !== this.props.playerPromise) {
+      const player = await nextProps.playerPromise
+      if (player !== this.state.player) {
+        this.setState({
+          player,
+        })
+      }
+    }
+  }
+
+  async componentWillMount() {
     this.props.audio.addEventListener('loadeddata', this.updateDuration)
-    this.props.player.on('empty', this.resetDuration)
+    const player = await this.props.playerPromise
+    player.on('empty', this.resetDuration)
   }
 
-  componentWillUnmount() {
+  async componentWillUnmount() {
     this.props.audio.removeEventListener('loadeddata', this.updateDuration)
-    this.props.player.removeListener('empty', this.resetDuration)
+    const player = await this.props.playerPromise
+    player.removeListener('empty', this.resetDuration)
   }
 
   updateDuration = () => {
@@ -46,8 +70,8 @@ export default class PlayerProvider extends React.Component {
   }
 
   getChildContext() {
-    const { player, audio } = this.props
-    const { duration } = this.state
+    const { audio } = this.props
+    const { duration, player } = this.state
     return {
       player,
       audio,
