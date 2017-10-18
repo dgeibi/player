@@ -1,6 +1,7 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
 const pkg = require('./package')
 const customCamel2Dash = require('./config/babel/customCamel2Dash')
 
@@ -47,6 +48,10 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'Player',
       template: 'src/template.ejs',
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      preload: ['app.js'],
+      prefetch: ['app.js'],
     }),
     new CopyWebpackPlugin([
       {
