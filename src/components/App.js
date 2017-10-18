@@ -37,13 +37,10 @@ class App extends React.Component {
       })
     })
 
-    this.playerEvents.on('songs-update', () => {
-      const { playingListID } = this.state
-      if (this.player.playlists.get(playingListID).keys.size < 1) {
-        this.setState({
-          title: TITLE_FALLBACK,
-        })
-      }
+    this.playerEvents.on('empty', () => {
+      this.setState({
+        title: TITLE_FALLBACK,
+      })
     })
 
     this.playerEvents.on('update', (key, value) => {
@@ -101,7 +98,7 @@ class App extends React.Component {
         <div className="player">
           <header className="player__title">
             <h3>{title}</h3>
-            <section>正在播放歌单：{playingListID}</section>
+            <section>歌单：{playingListID}</section>
           </header>
           <div className="player__body">
             <ProcessBar />

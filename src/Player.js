@@ -47,9 +47,11 @@ const observePlaying = withObserve(function ensurePaused(k, v) {
 
 const savePlayerKey = (key, value) => playerStore.set(key, value)
 const observeWithStore = withObserve(savePlayerKey)
-const observeListID = withObserve(function checkList(key, value) {
+
+const observeListID = withObserve(function emitList(key, value) {
   if (this.playlists.has(value)) {
-    return savePlayerKey(key, value)
+    return savePlayerKey(key, value).then(() =>
+      this.emit('update', key.replace(/ID$/, ''), this.playlists.get(value)))
   }
   return false
 })
@@ -116,7 +118,13 @@ class Player {
       this.currentTime = this.audio.currentTime
     })
 
-    this.listOfAll = this.playlists.get(FALLBACK_PLAYLIST)
+    let listOfAll = this.playlists.get(FALLBACK_PLAYLIST)
+    if (!listOfAll) {
+      listOfAll = new PlayList({ audio, title: FALLBACK_PLAYLIST })
+      this.playlists.set(FALLBACK_PLAYLIST, listOfAll)
+    }
+    this.listOfAll = listOfAll
+
     const playlist = this.playlists.get(this.playingListID)
 
     playlist
@@ -198,7 +206,13 @@ class Player {
     promises.push(playlist.save())
 
     await Promise.all(promises)
-    this.emit('songs-update')
+    this.emit('store-change')
+    if (this.selectedListID === FALLBACK_PLAYLIST) {
+      this.emitSelectedList()
+    }
+    if (!this.audio.dataset.key) {
+      await this.getPlayingList().setTrack()
+    }
   }
 
   async add(key, pl) {
@@ -212,62 +226,80 @@ class Player {
     }
     if (pl && pl !== FALLBACK_PLAYLIST) {
       let playlist = this.playlists.get(pl)
-      if (playlist === undefined) {
+      const NEW = playlist === undefined
+      if (NEW) {
         playlist = new PlayList({ audio: this.audio, title: pl })
         this.playlists.set(pl, playlist)
       }
       addKey(playlist.keys)
       await playlist.save()
-      this.emit('songs-update')
+      if (NEW) {
+        this.emitListsKeys()
+      }
+      if (pl === this.selectedListID) {
+        this.emitSelectedList()
+      }
     }
   }
 
   async delete(key, pl) {
-    if (!key) return
+    if (!key) return false
 
-    const rets = []
-    const deleteKey = (set, callback) => {
-      const hasCallback = Boolean(callback)
+    const promises = []
+
+    const IS_ARRAY = Array.isArray(key)
+
+    const deleteKey = (set) => {
       const deleteX = (x) => {
         const ret = set.delete(x)
-        if (hasCallback) callback(x)
-        rets.push(ret)
+        promises.push(ret)
         return ret
       }
-      if (Array.isArray(key)) {
-        return key.map(deleteX)
+
+      if (IS_ARRAY) {
+        return key.map(deleteX).some(Boolean)
       }
+
       return deleteX(key)
     }
 
-    let toSkip = null
-    const keynow = this.audio.dataset.key
-    const skipTrack = (k) => {
-      if (!toSkip && keynow === k) {
-        toSkip = k
-      }
-    }
     if (pl && pl !== FALLBACK_PLAYLIST) {
       const playlist = this.playlists.get(pl)
       if (playlist) {
-        deleteKey(playlist.keys, skipTrack)
+        if (!deleteKey(playlist.keys)) return false
         await playlist.save()
-        this.emit('songs-update')
+        if (pl === this.selectedListID) {
+          this.emitSelectedList()
+        }
       }
     } else {
-      [...this.playlists.values()].forEach((playlist) => {
-        deleteKey(playlist.keys, skipTrack)
-        playlist.save()
-      })
+      const playlists = [...this.playlists.values()]
+      const deleted = playlists
+        .map((playlist) => {
+          if (deleteKey(playlist.keys)) {
+            promises.push(playlist.save())
+            return true
+          }
+          return false
+        })
+        .some(Boolean)
+      if (!deleted) return false
 
       deleteKey(this.metaDatas)
       deleteKey(blobStore)
       deleteKey(metaStore)
-
-      await Promise.all(rets)
-      this.emit('songs-update')
+      await Promise.all(promises)
+      this.emitSelectedList()
     }
-    if (toSkip) {
+
+    await this.skipForwardIFNotAvailable()
+    return true
+  }
+
+  async skipForwardIFNotAvailable() {
+    const keynow = this.audio.dataset.key
+    const playlist = this.playlists.get(this.playingListID)
+    if (!playlist || !playlist.keys.has(keynow)) {
       await this.skip('next', false)
     }
   }
@@ -294,9 +326,13 @@ class Player {
     this.audio.currentTime = 0
   }
 
+  reset() {
+    this.audio.dataset.key = ''
+  }
+
   async skip(method, thenplay = true) {
     const { loop } = this
-    const playlist = this.playlists.get(this.playingListID)
+    const playlist = this.getPlayingList()
     if (await playlist[method](loop)) {
       if (thenplay) return this.play()
       this.stop()
@@ -304,6 +340,7 @@ class Player {
     }
     this.stop()
     if (playlist.keys.size < 1) {
+      this.reset()
       this.emit('empty')
     }
     return false
@@ -315,6 +352,49 @@ class Player {
 
   next() {
     return this.skip('next')
+  }
+
+  async deletePlayList(title = this.selectedListID) {
+    if (title === FALLBACK_PLAYLIST) return false
+    const playlist = this.playlists.get(title)
+    if (!playlist) return false
+    this.playlists.delete(title)
+    if (this.playingListID === title) {
+      this.stop()
+      this.playingListID = FALLBACK_PLAYLIST
+      await this.getPlayingList().setTrack()
+    }
+    if (this.selectedListID === title) this.selectedListID = FALLBACK_PLAYLIST
+    await playlist.destory()
+    this.emitListsKeys()
+    return true
+  }
+
+  emitSelectedList() {
+    this.emit('update', 'selectedList', this.getSelectedList())
+  }
+
+  emitListsKeys() {
+    this.emit('update', 'listsKeys', this.getListsKeys())
+  }
+
+  getSelectedList() {
+    return this.playlists.get(this.selectedListID)
+  }
+
+  getPlayingList() {
+    return this.playlists.get(this.playingListID)
+  }
+
+  getListsKeys() {
+    const { playlists } = this
+    return [...playlists.keys()]
+  }
+
+  getMetaDatas() {
+    const { metaDatas } = this
+    const selectedList = this.getSelectedList()
+    return [...selectedList.keys].map(k => metaDatas.get(k))
   }
 }
 

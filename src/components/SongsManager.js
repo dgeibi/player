@@ -12,15 +12,22 @@ class SongsManager extends React.Component {
   }
 
   player = this.context.player
+  defaultList = this.player.listOfAll.title
 
-  state = {
-    selectedRowKeys: [],
-    selectPlayListVisible: false,
-    selectedListID: this.player.selectedListID,
-    metaDatas: this.getMetaDatas(),
-    lists: this.getLists(),
-    confirmLoading: false,
-    deleteBtnLoading: false,
+  constructor(...args) {
+    super(...args)
+    this.state = {
+      selectedRowKeys: [],
+      selectPlayListVisible: false,
+      selectedListID: this.player.selectedListID,
+      selectedList: this.player.getSelectedList(),
+      metaDatas: this.player.getMetaDatas(),
+      listsKeys: this.player.getListsKeys(),
+      confirmLoading: false,
+      deleteBtnLoading: false,
+    }
+
+    this.state.listOptions = this.getListOptions(this.state.listsKeys)
   }
 
   columns = [
@@ -51,32 +58,11 @@ class SongsManager extends React.Component {
     },
   ]
 
-  getMetaDatas() {
-    const { metaDatas, selectedListID, playlists } = this.player
-    const playlist = playlists.get(selectedListID)
-    return [...playlist.keys].map(k => metaDatas.get(k))
-  }
-
-  getLists() {
-    const { playlists, listOfAll } = this.player
-
-    const ret = [listOfAll.title]
-    // eslint-disable-next-line no-restricted-syntax
-    for (const { title, keys } of playlists.values()) {
-      if (listOfAll.title !== title && keys.size > 0) {
-        ret.push(title)
-      }
-    }
-    return ret
-  }
-
   componentWillMount() {
-    this.player.on('songs-update', this.updateMetaData)
     this.player.on('update', this.updatePlayerState)
   }
 
   componentWillUnmount() {
-    this.player.removeListener('songs-update', this.updateMetaData)
     this.player.removeListener('update', this.updatePlayerState)
   }
 
@@ -147,26 +133,39 @@ class SongsManager extends React.Component {
     })
   }
 
-  updateMetaData = () => {
-    this.setState({
-      metaDatas: this.getMetaDatas(),
-      lists: this.getLists(),
-    })
-  }
-
   updatePlayerState = (key, value) => {
-    if (key === 'selectedListID') {
+    if (key === 'selectedList') {
       this.setState({
         [key]: value,
-        metaDatas: this.getMetaDatas(),
+        selectedListID: value.title,
+        metaDatas: this.player.getMetaDatas(),
+      })
+    } else if (key === 'listsKeys') {
+      this.setState({
+        [key]: value,
+        listOptions: this.getListOptions(value),
       })
     }
   }
 
+  getCompleteSrc(listsKeys) {
+    const { playlistInputed, selectedListID } = this.state
+    const { defaultList } = this
+    return listsKeys.filter(l => ![defaultList, playlistInputed, selectedListID].includes(l))
+  }
+
+  getListOptions(listsKeys) {
+    return listsKeys.map(l => <Option key={l}>{l}</Option>)
+  }
+
   handlePlayListSelect = (selectedListID) => {
-    if (this.state.selectedListID !== selectedListID) {
+    if (this.player.selectedListID !== selectedListID) {
       this.player.selectedListID = selectedListID
     }
+  }
+
+  handlePlayListDelete = () => {
+    this.player.deletePlayList()
   }
 
   render() {
@@ -176,9 +175,10 @@ class SongsManager extends React.Component {
       playlistInputed,
       metaDatas,
       selectedListID,
-      lists,
       confirmLoading,
       deleteBtnLoading,
+      listOptions,
+      listsKeys,
     } = this.state
     const { columns } = this
 
@@ -188,6 +188,7 @@ class SongsManager extends React.Component {
     }
 
     const hasSelected = selectedRowKeys.length > 0
+
     return (
       <div>
         <div style={{ margin: '16px 0px' }}>
@@ -201,8 +202,15 @@ class SongsManager extends React.Component {
             value={selectedListID}
             placeholder="切换歌单"
             onChange={this.handlePlayListSelect}
-            children={lists.map(l => <Option key={l}>{l}</Option>)}
+            children={listOptions}
           />{' '}
+          <Button
+            type="danger"
+            onClick={this.handlePlayListDelete}
+            disabled={selectedListID === this.defaultList}
+          >
+            删除当前歌单
+          </Button>{' '}
           <Button
             type="danger"
             loading={deleteBtnLoading}
@@ -236,7 +244,7 @@ class SongsManager extends React.Component {
           >
             <AutoComplete
               style={{ width: 200 }}
-              dataSource={lists.filter(l => l !== this.player.listOfAll.title && l !== playlistInputed)}
+              dataSource={this.getCompleteSrc(listsKeys)}
               placeholder="输入歌单名称"
               onChange={this.handleModalInputChange}
               value={playlistInputed}

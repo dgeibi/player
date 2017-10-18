@@ -38,7 +38,17 @@ class PlayList {
    * @param {string} key
    */
   add(key) {
-    this.keys.add(key)
+    return this.keys.add(key)
+  }
+
+  delete(key) {
+    return this.keys.delete(key)
+  }
+
+  destory() {
+    const { title } = this
+    this.keys = null
+    return playListStore.delete(title)
   }
 
   /**
@@ -88,10 +98,7 @@ class PlayList {
 
   save() {
     const { title, keys, pos } = this
-    if (keys.size > 0) {
-      return playListStore.setValue({ title, keys, pos })
-    }
-    return playListStore.delete(title)
+    return playListStore.setValue({ title, keys, pos })
   }
 
   setTrack() {
@@ -107,8 +114,12 @@ class PlayList {
       if (pos === -1) return false
       this.pos = pos
       await this._setTrack()
-    } else if (!this.audio.src || !this.keys.has(this.audio.dataset.key)) {
-      await this._setTrack()
+    } else {
+      const audioKey = this.audio.dataset.key
+      const plKey = this.getCurrentKey()
+      if (!this.audio.src || !this.keys.has(audioKey) || plKey !== audioKey) {
+        await this._setTrack()
+      }
     }
 
     return this.audio.play()
