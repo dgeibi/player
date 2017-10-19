@@ -40,10 +40,7 @@ const withObserve = shouldSet =>
     }
   }
 
-const observePlaying = withObserve(function ensurePaused(k, v) {
-  if (!v) this.audio.pause()
-  return true
-})
+const observe = withObserve()
 
 const savePlayerKey = (key, value) => playerStore.set(key, value)
 const observeWithStore = withObserve(savePlayerKey)
@@ -57,7 +54,7 @@ const observeListID = withObserve(function emitList(key, value) {
 })
 
 class Player {
-  @observePlaying playing = false
+  @observe playing = false
   @observeListID selectedListID = FALLBACK_PLAYLIST
   @observeListID playingListID = FALLBACK_PLAYLIST
   @observeWithStore loop = false
@@ -112,6 +109,14 @@ class Player {
 
     this.audio.addEventListener('ended', () => {
       this.next(this.loop)
+    })
+
+    this.audio.addEventListener('pause', () => {
+      this.playing = false
+    })
+
+    this.audio.addEventListener('play', () => {
+      this.playing = true
     })
 
     this.audio.addEventListener('timeupdate', () => {
@@ -309,7 +314,6 @@ class Player {
     const ret = await playlist.play(key)
 
     if (ret !== false) {
-      this.playing = true
       if (pl && this.playingListID !== pl) {
         this.playingListID = pl
       }
@@ -318,7 +322,7 @@ class Player {
   }
 
   pause() {
-    this.playing = false
+    this.audio.pause()
   }
 
   stop() {
