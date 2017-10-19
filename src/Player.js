@@ -2,6 +2,7 @@ import EventEmitter from 'uemitter'
 import ID3 from 'id3-parser'
 import nanoid from 'nanoid'
 import isPromise from 'is-promise'
+import FA from 'fasy'
 
 import PlayList from './PlayList'
 import { blobStore, playListStore, playerStore, metaStore } from './stores'
@@ -180,120 +181,119 @@ class Player {
     })
   }
 
-  async addFiles(f) {
+  /**
+   * @param {Array<File>} fileArr
+   */
+  async addFiles(fileArr) {
     const { metaDatas } = this
-    const files = Array.from(f)
+    const files = Array.from(fileArr)
     const tags = await Promise.all(files.map(ID3.parse))
-
+    const outputs = tags.map(getOutputs)
     const playlist = this.listOfAll
 
-    const promises = []
-    tags.forEach((tag, index) => {
-      const { album, artist, title } = tag
-      const key = nanoid()
-      const file = files[index]
-      const { name } = file
-
-      const info = {
-        key,
-        album,
-        artist,
-        title,
-        name,
-      }
-      info.title = info.title || info.name.replace(/\.\S*?$/, '')
-
+    const saveFileAndMetaData = async ({ key, metadata, file }) => {
       playlist.add(key)
-      metaDatas.set(key, info)
-      promises.push(metaStore.setValue(info))
-      promises.push(blobStore.set(key, file))
-    })
-    promises.push(playlist.save())
+      metaDatas.set(key, metadata)
+      await Promise.all([metaStore.setValue(metadata), blobStore.set(key, file)])
+    }
+    await FA.concurrent.forEach(saveFileAndMetaData, outputs)
+    await playlist.save()
 
-    await Promise.all(promises)
     this.emit('store-change')
+
     if (this.selectedListID === FALLBACK_PLAYLIST) {
       this.emitSelectedList()
     }
     if (!this.audio.dataset.key) {
       await this.getPlayingList().setTrack()
     }
+
+    function getOutputs(tag, index) {
+      const { album, artist, title } = tag
+      const file = files[index]
+      const key = nanoid()
+
+      const { name } = file
+      const metadata = {
+        key,
+        album,
+        artist,
+        title,
+        name,
+      }
+      metadata.title = metadata.title || metadata.name.replace(/\.\S*?$/, '')
+
+      return { key, metadata, file }
+    }
   }
 
-  async add(key, pl) {
-    if (!key) return
+  /**
+   * @param {string} key
+   * @param {string} [pl]
+   */
+  async add(key, pl = this.selectedListID) {
+    if (!key || !pl || pl === FALLBACK_PLAYLIST) return
+    let playlist = this.playlists.get(pl)
 
-    const addKey = (set) => {
+    const IS_NEW_PL = playlist === undefined
+    if (IS_NEW_PL) {
+      playlist = new PlayList({ audio: this.audio, title: pl })
+      this.playlists.set(pl, playlist)
+    }
+
+    if (!addKey(playlist.keys)) return
+
+    await playlist.save()
+
+    if (IS_NEW_PL) {
+      this.emitListsKeys()
+    }
+
+    if (pl === this.selectedListID) {
+      this.emitSelectedList()
+    }
+
+    function addKey(set) {
       if (Array.isArray(key)) {
-        return key.map(x => set.add(x))
+        return key.map(x => set.add(x)).some(Boolean)
       }
       return set.add(key)
     }
-    if (pl && pl !== FALLBACK_PLAYLIST) {
-      let playlist = this.playlists.get(pl)
-      const NEW = playlist === undefined
-      if (NEW) {
-        playlist = new PlayList({ audio: this.audio, title: pl })
-        this.playlists.set(pl, playlist)
-      }
-      addKey(playlist.keys)
-      await playlist.save()
-      if (NEW) {
-        this.emitListsKeys()
-      }
-      if (pl === this.selectedListID) {
-        this.emitSelectedList()
-      }
-    }
   }
 
-  async delete(key, pl) {
-    if (!key) return false
-
-    const promises = []
-
-    const IS_ARRAY = Array.isArray(key)
-
-    const deleteKey = (set) => {
-      const deleteX = (x) => {
-        const ret = set.delete(x)
-        promises.push(ret)
-        return ret
-      }
-
-      if (IS_ARRAY) {
-        return key.map(deleteX).some(Boolean)
-      }
-
-      return deleteX(key)
-    }
+  /**
+   * @param {string|Array<string>} keys
+   * @param {string} [pl]
+   */
+  async delete(keys, pl) {
+    if (!keys) return false
+    const deleteKeys = Array.isArray(keys)
+      ? set => keys.map(x => set.delete(x))
+      : set => [set.delete(keys)]
 
     if (pl && pl !== FALLBACK_PLAYLIST) {
       const playlist = this.playlists.get(pl)
-      if (playlist) {
-        if (!deleteKey(playlist.keys)) return false
-        await playlist.save()
-        if (pl === this.selectedListID) {
-          this.emitSelectedList()
-        }
+      if (!playlist) return false
+      if (!deleteKeys(playlist.keys).includes(true)) return false
+      await playlist.save()
+      if (pl === this.selectedListID) {
+        this.emitSelectedList()
       }
     } else {
       const playlists = [...this.playlists.values()]
-      const deleted = playlists
-        .map((playlist) => {
-          if (deleteKey(playlist.keys)) {
-            promises.push(playlist.save())
-            return true
-          }
-          return false
-        })
-        .some(Boolean)
-      if (!deleted) return false
+      const toDeleteds = playlists
+        .map(playlist => deleteKeys(playlist.keys).includes(true) && playlist.save())
+        .filter(Boolean)
+      if (toDeleteds.length < 1) return false
 
-      deleteKey(this.metaDatas)
-      deleteKey(blobStore)
-      deleteKey(metaStore)
-      await Promise.all(promises)
+      deleteKeys(this.metaDatas)
+
+      await Promise.all([
+        ...toDeleteds,
+        ...deleteKeys(blobStore),
+        ...deleteKeys(metaStore),
+      ])
+
       this.emitSelectedList()
     }
 
