@@ -44,13 +44,13 @@ export default class PlayerProvider extends React.Component {
   }
 
   async componentWillMount() {
-    this.props.audio.addEventListener('loadeddata', this.updateDuration)
+    this.props.audio.addEventListener('durationchange', this.updateDuration)
     const player = await this.props.playerPromise
     player.on('empty', this.resetDuration)
   }
 
   async componentWillUnmount() {
-    this.props.audio.removeEventListener('loadeddata', this.updateDuration)
+    this.props.audio.removeEventListener('durationchange', this.updateDuration)
     const player = await this.props.playerPromise
     player.removeListener('empty', this.resetDuration)
   }
