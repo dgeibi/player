@@ -9,6 +9,14 @@ module.exports = {
   output: {
     publicPath: './',
   },
+  resolve: {
+    alias: {
+      react: 'anujs',
+      'react-dom': 'anujs',
+      'prop-types': 'anujs/lib/ReactPropTypes',
+      'create-react-class': 'anujs/lib/createClass',
+    },
+  },
   plugins: [
     new CleanWebpackPlugin([DIST_DIR]),
     new WorkboxBuildWebpackPlugin({

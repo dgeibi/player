@@ -21,6 +21,7 @@
   "license": "MIT",
   "dependencies": {
     "antd": "^2.13.6",
+    "anujs": "github:RubyLouvre/anu#7b80949",
     "babel-polyfill": "^7.0.0-beta.3",
     "id3-parser": "^1.2.0",
     "idb": "^2.0.4",

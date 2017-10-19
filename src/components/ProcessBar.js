@@ -44,7 +44,7 @@ class ProcessBar extends React.Component {
           min={0}
           max={duration || 0}
           value={currentTime}
-          onChange={this.handleRangeChange}
+          onInput={this.handleRangeChange}
           className="player__process-bar player__range"
         />
       </div>

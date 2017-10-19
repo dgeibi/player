@@ -81,7 +81,7 @@ class ControlsRight extends React.Component {
           max={1.0}
           step={0.01}
           value={volume}
-          onChange={this.handleVolumeChange}
+          onInput={this.handleVolumeChange}
         />
       </div>
     )
