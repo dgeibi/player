@@ -13,6 +13,7 @@ class ControlsLeft extends React.Component {
     duration: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   }
 
+  /** @type {HTMLAudioElement} */
   audio = this.context.audio
   player = this.context.player
 

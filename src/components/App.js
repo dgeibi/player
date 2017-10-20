@@ -16,6 +16,7 @@ class App extends React.Component {
     audio: PropTypes.object.isRequired,
   }
 
+  /** @type {Player} */
   player = this.context.player
 
   state = {

@@ -22,7 +22,7 @@ const render = (ele, hydrate = false) => {
 }
 
 const audio = document.querySelector('.player__audio')
-/** @type {Player} */
+/** @type {Promise<Player>} */
 const playerPromise = Player.fromStore({ audio })
 
 const Root = () => (
