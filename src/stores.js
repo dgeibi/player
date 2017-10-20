@@ -2,33 +2,56 @@ import idb from 'idb'
 
 import Store from './utils/Store'
 
-const dbPromise = idb.open('player', 1, (upgradeDB) => {
-  upgradeDB.createObjectStore('playlist', {
+const DB_NAME = 'player'
+
+const PLAYLIST = 'playlist'
+const PLAYER = 'player'
+const BLOB = 'blob'
+const METADATA = 'metadata'
+
+const dbPromise = idb.open(DB_NAME, 1, (upgradeDB) => {
+  upgradeDB.createObjectStore(PLAYLIST, {
     keyPath: 'title',
   })
-  upgradeDB.createObjectStore('metadata', {
+  upgradeDB.createObjectStore(METADATA, {
     keyPath: 'key',
   })
-  upgradeDB.createObjectStore('blob')
-  upgradeDB.createObjectStore('player')
+  upgradeDB.createObjectStore(BLOB)
+  upgradeDB.createObjectStore(PLAYER)
 })
 
 export const blobStore = new Store({
   dbPromise,
-  storeName: 'blob',
+  storeName: BLOB,
 })
 
 export const playListStore = new Store({
   dbPromise,
-  storeName: 'playlist',
+  storeName: PLAYLIST,
 })
 
 export const playerStore = new Store({
   dbPromise,
-  storeName: 'player',
+  storeName: PLAYER,
 })
 
 export const metaStore = new Store({
   dbPromise,
-  storeName: 'metadata',
+  storeName: METADATA,
 })
+
+export const addItem = async ({ file, metadata, key }) => {
+  const db = await dbPromise
+  const tx = db.transaction([BLOB, METADATA], 'readwrite')
+  tx.objectStore(BLOB).put(file, key)
+  tx.objectStore(METADATA).put(metadata)
+  return tx.complete
+}
+
+export const deleteItem = async (key) => {
+  const db = await dbPromise
+  const tx = db.transaction([BLOB, METADATA], 'readwrite')
+  tx.objectStore(BLOB).delete(key)
+  tx.objectStore(METADATA).delete(key)
+  return tx.complete
+}

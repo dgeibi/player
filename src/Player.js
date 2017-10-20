@@ -5,7 +5,7 @@ import isPromise from 'is-promise'
 import FA from 'fasy'
 
 import PlayList from './PlayList'
-import { blobStore, playListStore, playerStore, metaStore } from './stores'
+import { playListStore, playerStore, metaStore, addItem, deleteItem } from './stores'
 import ensureHasKey from './utils/ensure-has-key'
 import ensureNumber from './utils/ensure-number'
 
@@ -192,9 +192,9 @@ class Player {
     const playlist = this.listOfAll
 
     const saveFileAndMetaData = async ({ key, metadata, file }) => {
+      await addItem({ key, metadata, file })
       playlist.add(key)
       metaDatas.set(key, metadata)
-      await Promise.all([metaStore.setValue(metadata), blobStore.set(key, file)])
     }
     await FA.concurrent.forEach(saveFileAndMetaData, outputs)
     await playlist.save()
@@ -228,7 +228,7 @@ class Player {
   }
 
   /**
-   * @param {string} key
+   * @param {string|Array<string>} key
    * @param {string} [pl]
    */
   async add(key, pl = this.selectedListID) {
@@ -267,9 +267,8 @@ class Player {
    */
   async delete(keys, pl) {
     if (!keys) return false
-    const deleteKeys = Array.isArray(keys)
-      ? set => keys.map(x => set.delete(x))
-      : set => [set.delete(keys)]
+    const ks = Array.isArray(keys) ? keys : [keys]
+    const deleteKeys = set => ks.map(x => set.delete(x))
 
     if (pl && pl !== FALLBACK_PLAYLIST) {
       const playlist = this.playlists.get(pl)
@@ -288,11 +287,7 @@ class Player {
 
       deleteKeys(this.metaDatas)
 
-      await Promise.all([
-        ...toDeleteds,
-        ...deleteKeys(blobStore),
-        ...deleteKeys(metaStore),
-      ])
+      await Promise.all([...toDeleteds, ks.map(deleteItem)])
 
       this.emitSelectedList()
     }
