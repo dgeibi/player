@@ -322,6 +322,7 @@ class Player {
 
   stop() {
     this.pause()
+    this.playing = false
     this.audio.currentTime = 0
   }
 
