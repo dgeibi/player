@@ -9,6 +9,8 @@
     "analyze": "webpack --env.production --json | webpack-bundle-size-analyzer",
     "lint": "eslint .",
     "fix": "eslint . --fix",
+    "lint-staged-stash": "git stash save --keep-index 'lint-staged' && touch .didstash || rm .didstash || true",
+    "lint-staged-stash-pop": "test -f .didstash && rm .didstash && git stash pop || true",
     "format": "prettier-eslint --write '**/*.{js,scss}'",
     "precommit": "lint-staged",
     "deploy": "sh deploy"
@@ -84,8 +86,10 @@
   },
   "lint-staged": {
     "*.{scss,js}": [
+      "lint-staged-stash",
       "prettier-eslint --write",
-      "git add"
+      "git add",
+      "lint-staged-stash-pop"
     ]
   }
 }
