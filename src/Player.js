@@ -66,7 +66,7 @@ class Player {
     audio,
     loop,
     metaDatas,
-    playlists,
+    playlistOpts,
     selectedListID,
     playingListID,
     currentTime,
@@ -85,18 +85,21 @@ class Player {
     this.loop = Boolean(loop)
 
     /** @type {Map<string, PlayList>} */
-    this.playlists = new Map(playlists)
-    if (this.playlists.size === 0) {
-      this.playlists.set(
-        FALLBACK_PLAYLIST,
-        new PlayList({ audio, title: FALLBACK_PLAYLIST })
-      )
+    this.playlists = new Map()
+    if (Array.isArray(playlistOpts)) {
+      this.importPlayListsFromOpts(playlistOpts)
     }
+    this.listOfAll =
+      this.playlists.get(FALLBACK_PLAYLIST) ||
+      this.createPlayList({ title: FALLBACK_PLAYLIST })
 
     this.playingListID = ensureHasKey(this.playlists, playingListID, FALLBACK_PLAYLIST)
     this.selectedListID = ensureHasKey(this.playlists, selectedListID, FALLBACK_PLAYLIST)
     this.currentTime = ensureNumber(currentTime, FALLBACK_TIME, 0)
     this.volume = ensureNumber(volume, FALLBACK_VOL, 0, 1)
+
+    /** @type {string} */
+    this.currentTrack = null
 
     this.audio.volume = this.volume
 
@@ -105,7 +108,7 @@ class Player {
     })
 
     this.audio.addEventListener('loadeddata', () => {
-      this.emit('metadata', this.metaDatas.get(this.audio.dataset.key))
+      this.emit('metadata', this.metaDatas.get(this.currentTrack))
     })
 
     this.audio.addEventListener('ended', () => {
@@ -124,21 +127,12 @@ class Player {
       this.currentTime = this.audio.currentTime
     })
 
-    let listOfAll = this.playlists.get(FALLBACK_PLAYLIST)
-    if (!listOfAll) {
-      listOfAll = new PlayList({ audio, title: FALLBACK_PLAYLIST })
-      this.playlists.set(FALLBACK_PLAYLIST, listOfAll)
-    }
-    this.listOfAll = listOfAll
-
     const playlist = this.playlists.get(this.playingListID)
 
-    playlist
-      .setTrack()
-      .then(() => {
-        this.audio.currentTime = this.currentTime
-      })
-      .catch(() => {})
+    playlist.setTrack().then((setted) => {
+      if (!setted) return
+      this.audio.currentTime = this.currentTime
+    })
   }
 
   static async fromStore(opts) {
@@ -158,26 +152,12 @@ class Player {
 
     const audio = opts.audio || new Audio()
 
-    const playlists = playlistOpts.reduce(
-      (map, { title, keys, pos }) =>
-        map.set(
-          title,
-          new PlayList({
-            title,
-            keys,
-            audio,
-            pos,
-          })
-        ),
-      new Map()
-    )
-
     return new Player({
       ...opts,
       ...playerOpts,
       audio,
-      playlists,
       metaDatas,
+      playlistOpts,
     })
   }
 
@@ -204,7 +184,7 @@ class Player {
     if (this.selectedListID === FALLBACK_PLAYLIST) {
       this.emitSelectedList()
     }
-    if (!this.audio.dataset.key) {
+    if (!this.currentTrack) {
       await this.getPlayingList().setTrack()
     }
 
@@ -232,16 +212,18 @@ class Player {
    * @param {string} [pl]
    */
   async add(key, pl = this.selectedListID) {
-    if (!key || !pl || pl === FALLBACK_PLAYLIST) return
+    if (!key || !pl || pl === FALLBACK_PLAYLIST) return false
     let playlist = this.playlists.get(pl)
 
-    const IS_NEW_PL = playlist === undefined
+    const IS_NEW_PL = !playlist
     if (IS_NEW_PL) {
-      playlist = new PlayList({ audio: this.audio, title: pl })
-      this.playlists.set(pl, playlist)
+      playlist = this.createPlayList({ title: pl })
     }
 
-    if (!addKey(playlist.keys)) return
+    const keys = Array.isArray(key) ? key : [key]
+    const sizeBefore = playlist.getSize()
+    keys.forEach(k => playlist.add(k))
+    if (playlist.getSize() <= sizeBefore) return false
 
     await playlist.save()
 
@@ -253,12 +235,7 @@ class Player {
       this.emitSelectedList()
     }
 
-    function addKey(set) {
-      if (Array.isArray(key)) {
-        return key.map(x => set.add(x)).some(Boolean)
-      }
-      return set.add(key)
-    }
+    return true
   }
 
   /**
@@ -298,9 +275,10 @@ class Player {
   }
 
   async skipForwardIFNotAvailable() {
-    const keynow = this.audio.dataset.key
-    const playlist = this.playlists.get(this.playingListID)
-    if (!playlist || !playlist.keys.has(keynow)) {
+    const { currentTrack } = this
+    if (!currentTrack) return
+    const playlist = this.getPlayingList()
+    if (!playlist || !playlist.keys.has(currentTrack)) {
       await this.skip('next', false)
     }
   }
@@ -317,6 +295,19 @@ class Player {
     return ret
   }
 
+  createPlayList(opts) {
+    const opt = Object.assign({}, opts, {
+      player: this,
+    })
+    const playlist = new PlayList(opt)
+    this.playlists.set(playlist.title, playlist)
+    return playlist
+  }
+
+  importPlayListsFromOpts(playlistOpts) {
+    playlistOpts.forEach(opt => this.createPlayList(opt))
+  }
+
   pause() {
     this.audio.pause()
   }
@@ -328,7 +319,8 @@ class Player {
   }
 
   reset() {
-    this.audio.dataset.key = ''
+    this.currentTrack = null
+    this.emit('empty')
   }
 
   async skip(method, thenplay = true) {
@@ -342,7 +334,6 @@ class Player {
     this.stop()
     if (playlist.keys.size < 1) {
       this.reset()
-      this.emit('empty')
     }
     return false
   }

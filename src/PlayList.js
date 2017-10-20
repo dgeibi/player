@@ -3,7 +3,7 @@ import { blobStore, playListStore } from './stores'
 
 class PlayList {
   constructor({
-    title, keys, audio, pos,
+    title, keys, pos, player,
   } = {}) {
     /** @type {Set<string>} */
     this.keys = new Set(keys)
@@ -14,11 +14,14 @@ class PlayList {
     /** @type {number} */
     this.pos = this.keys.size < pos ? 0 : Number(pos) || 0
 
+    this.player = player
+    if (!player) throw Error('player is required!')
+
     /** @type {HTMLAudioElement} */
-    this.audio = audio || new Audio()
+    this.audio = this.player.audio
   }
 
-  static async getSrc(key) {
+  static async getUrlByKey(key) {
     const blob = await blobStore.get(key)
     if (blob) {
       return URL.createObjectURL(blob)
@@ -26,12 +29,8 @@ class PlayList {
     throw Error('file not found')
   }
 
-  shouldSetSrc({ key }) {
-    if (this.audio.dataset.key !== key) {
-      this.audio.dataset.key = key
-      return true
-    }
-    return false
+  shouldSetSrc(key) {
+    return this.player.currentTrack !== key
   }
 
   /**
@@ -70,7 +69,7 @@ class PlayList {
     if (!loop && pos + 1 === keys.size) return false
 
     this.pos = (pos + 1) % keys.size
-    await this._setTrack()
+    await this.setTrack()
     return true
   }
 
@@ -80,30 +79,28 @@ class PlayList {
     if (!loop && pos <= 0) return false
 
     this.pos = (keys.size + (pos - 1)) % keys.size
-    await this._setTrack()
+    await this.setTrack()
     return true
   }
 
-  async _setTrack() {
+  async setTrack() {
     const { audio } = this
-    const key = this.getCurrentKey()
-    const newSrc = await PlayList.getSrc(key)
+    const key = this.getCurrentTrack()
 
-    if (this.shouldSetSrc({ newSrc, key })) {
+    const toset = this.shouldSetSrc(key)
+    if (toset) {
+      this.player.currentTrack = key
       URL.revokeObjectURL(audio.src)
+      const newSrc = await PlayList.getUrlByKey(key)
       audio.src = newSrc
       this.save()
     }
+    return toset
   }
 
   save() {
     const { title, keys, pos } = this
     return playListStore.setValue({ title, keys, pos })
-  }
-
-  setTrack() {
-    if (!this.available()) return Promise.reject()
-    return this._setTrack()
   }
 
   async play(key) {
@@ -113,12 +110,12 @@ class PlayList {
       const pos = [...this.keys].indexOf(key)
       if (pos === -1) return false
       this.pos = pos
-      await this._setTrack()
+      await this.setTrack()
     } else {
-      const audioKey = this.audio.dataset.key
-      const plKey = this.getCurrentKey()
-      if (!this.audio.src || !this.keys.has(audioKey) || plKey !== audioKey) {
-        await this._setTrack()
+      const playerTrack = this.player.currentTrack
+      const plTrack = this.getCurrentTrack()
+      if (!this.audio.src || !this.keys.has(playerTrack) || plTrack !== playerTrack) {
+        await this.setTrack()
       }
     }
 
@@ -126,11 +123,11 @@ class PlayList {
   }
 
   pause() {
-    if (!this.available()) return Promise.resolve(false)
+    if (!this.available()) return false
     return this.audio.pause()
   }
 
-  getCurrentKey() {
+  getCurrentTrack() {
     const { pos, keys } = this
     if (keys.size < 1) return null
     return [...keys][pos]
