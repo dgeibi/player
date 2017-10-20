@@ -267,27 +267,28 @@ class Player {
    */
   async delete(keys, pl) {
     if (!keys) return false
-    const ks = Array.isArray(keys) ? keys : [keys]
-    const deleteKeys = set => ks.map(x => set.delete(x))
+    const items = Array.isArray(keys) ? keys : [keys]
+    const deleteKeys = set => items.map(x => set.delete(x))
 
     if (pl && pl !== FALLBACK_PLAYLIST) {
       const playlist = this.playlists.get(pl)
       if (!playlist) return false
-      if (!deleteKeys(playlist.keys).includes(true)) return false
+      if (!deleteKeys(playlist).includes(true)) return false
       await playlist.save()
       if (pl === this.selectedListID) {
         this.emitSelectedList()
       }
     } else {
       const playlists = [...this.playlists.values()]
-      const toDeleteds = playlists
+      const toBeSaveds = playlists
         .map(playlist => deleteKeys(playlist.keys).includes(true) && playlist.save())
         .filter(Boolean)
-      if (toDeleteds.length < 1) return false
+      if (toBeSaveds.length < 1) return false
 
       deleteKeys(this.metaDatas)
 
-      await Promise.all([...toDeleteds, ks.map(deleteItem)])
+      await Promise.all(items.map(deleteItem))
+      await Promise.all(toBeSaveds)
 
       this.emitSelectedList()
     }
