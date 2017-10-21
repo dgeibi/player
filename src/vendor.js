@@ -1,0 +1,8 @@
+import 'react'
+import 'react-dom'
+import 'idb'
+import 'uemitter'
+import 'id3-parser'
+import 'nanoid'
+import 'is-promise'
+import 'fasy'

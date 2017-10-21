@@ -1,3 +1,4 @@
+const webpack = require('webpack')
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
@@ -11,6 +12,8 @@ const defaultInclude = [path.resolve(__dirname, 'src')]
 module.exports = {
   devtool: 'source-map',
   entry: {
+    vendor: './src/vendor.js',
+    antd: './src/vendor-antd.js',
     app: './src/index.js',
   },
   output: {
@@ -45,13 +48,16 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.optimize.CommonsChunkPlugin({
+      name: ['vendor', 'antd'],
+      minChunks: Infinity,
+    }),
     new HtmlWebpackPlugin({
       title: 'Player',
       template: 'src/template.ejs',
     }),
     new ScriptExtHtmlWebpackPlugin({
-      preload: ['app.js'],
-      prefetch: ['app.js'],
+      preload: ['app.js', 'vendor.js', 'antd.js'],
     }),
     new CopyWebpackPlugin([
       {
