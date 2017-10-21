@@ -9,8 +9,6 @@
     "analyze": "webpack --env.production --json | webpack-bundle-size-analyzer",
     "lint": "eslint .",
     "fix": "eslint . --fix",
-    "lint-staged-stash": "git stash save --keep-index 'lint-staged' && touch .didstash || rm .didstash || true",
-    "lint-staged-stash-pop": "test -f .didstash && rm .didstash && git stash pop || true",
     "format": "prettier-eslint --write '**/*.{js,scss}'",
     "precommit": "lint-staged",
     "deploy": "sh deploy"
@@ -52,6 +50,7 @@
     "clean-webpack-plugin": "^0.1.17",
     "copy-webpack-plugin": "^4.1.1",
     "css-loader": "^0.28.4",
+    "git-exec-and-restage": "^1.0.1",
     "eslint": "^4.8.0",
     "eslint-config-airbnb-base": "^12.0.2",
     "eslint-config-dgeibi": "^3.0.6",
@@ -86,10 +85,7 @@
   },
   "lint-staged": {
     "*.{scss,js}": [
-      "lint-staged-stash",
-      "prettier-eslint --write",
-      "git add",
-      "lint-staged-stash-pop"
+      "git-exec-and-restage prettier-eslint --write --"
     ]
   }
 }
