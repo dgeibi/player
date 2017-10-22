@@ -165,12 +165,13 @@ class Player {
    * @param {Array<File>} fileArr
    */
   async addFiles(fileArr) {
-    const { metaDatas } = this
+    const { audio, metaDatas, emit } = this
     const files = Array.from(fileArr)
     const tags = await Promise.all(files.map(ID3.parse))
-    const outputs = tags.map(getOutputs)
+    const outputs = tags.map(getOutputs).filter(Boolean)
     const playlist = this.listOfAll
 
+    if (outputs.length < 1) return
     const saveFileAndMetaData = async ({ key, metadata, file }) => {
       await addItem({ key, metadata, file })
       playlist.add(key)
@@ -179,7 +180,7 @@ class Player {
     await FA.concurrent.forEach(saveFileAndMetaData, outputs)
     await playlist.save()
 
-    this.emit('store-change')
+    emit('store-change')
 
     if (this.selectedListID === FALLBACK_PLAYLIST) {
       this.emitSelectedList()
@@ -191,6 +192,15 @@ class Player {
     function getOutputs(tag, index) {
       const { album, artist, title } = tag
       const file = files[index]
+
+      const { type } = file
+
+      // android's bug: type is empty
+      if (type !== '' && !audio.canPlayType(type)) {
+        emit('add-fail', file.name)
+        return null
+      }
+
       const key = nanoid()
 
       const { name } = file

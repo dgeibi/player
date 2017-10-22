@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Button } from 'antd'
-
+import { message, Button } from 'antd'
 import ControlsLeft from './ControlsLeft'
 import ControlsRight from './ControlsRight'
 import ProcessBar from './ProcessBar'
@@ -49,6 +48,10 @@ class App extends React.Component {
       this.setState({
         [key]: value,
       })
+    })
+
+    this.playerEvents.on('add-fail', (filename) => {
+      message.error(`无法添加 ${filename}`)
     })
   }
 
