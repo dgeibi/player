@@ -3,7 +3,6 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 const WorkboxBuildWebpackPlugin = require('workbox-webpack-plugin')
 const path = require('path')
 const pkg = require('./package')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const DIST_DIR = pkg.dist_dir
 module.exports = {
@@ -19,18 +18,25 @@ module.exports = {
     },
   },
   plugins: [
-    new CopyWebpackPlugin([
-      {
-        from: require.resolve('workbox-sw'),
-        to: 'workbox-sw.prod.js',
-      },
-    ]),
     new CleanWebpackPlugin([DIST_DIR]),
     new WorkboxBuildWebpackPlugin({
       globDirectory: DIST_DIR,
-      globPatterns: ['**/*.{html,css,json}', '**/!(workbox-sw.prod).js'],
+      globPatterns: ['**/*.{html,css,json,js}'],
       swDest: path.join(DIST_DIR, 'sw.js'),
-      swSrc: `${__dirname}/src/sw.js`,
+      clientsClaim: true,
+      skipWaiting: true,
+      runtimeCaching: [
+        {
+          urlPattern: /.*\.(woff|woff2|eot|ttf|svg)$/,
+          handler: 'cacheFirst',
+          options: {
+            cacheName: 'assets',
+            cacheExpiration: {
+              maxEntries: 10,
+            },
+          },
+        },
+      ],
     }),
     new BabelMinifyWebpackPlugin(
       {
