@@ -33,7 +33,7 @@
     "react-dom": "^16.0.0",
     "react-feather": "^1.0.7",
     "react-hot-loader": "^3.0.0",
-    "uemitter": "0.0.3"
+    "uemitter": "0.0.4"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.5",

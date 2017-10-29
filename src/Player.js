@@ -71,9 +71,8 @@ class Player {
     playingListID,
     currentTime,
     volume,
-    emitter,
   } = {}) {
-    this.emitter = emitter || EventEmitter()
+    this.emitter = EventEmitter()
     Object.assign(this, this.emitter)
 
     /** @type {HTMLAudioElement} */
@@ -112,7 +111,7 @@ class Player {
     })
 
     this.audio.addEventListener('ended', () => {
-      this.next(this.loop)
+      this.next()
     })
 
     this.audio.addEventListener('pause', () => {
