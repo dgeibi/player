@@ -8,7 +8,7 @@ const defaultInclude = [path.resolve(__dirname, 'src')]
 
 module.exports = (env = {}) => {
   const isProduction = env.production === true
-  const nodeEnv = !isProduction ? 'developement' : 'production'
+  const nodeEnv = !isProduction ? 'development' : 'production'
   process.env.NODE_ENV = nodeEnv
 
   const common = merge([
