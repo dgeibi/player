@@ -1,39 +1,22 @@
 {
   "presets": [
     [
-      "env",
+      "@babel/preset-env",
       {
         "modules": false,
         "useBuiltIns": "usage"
       }
     ],
-    "stage-3",
-    "react"
+    "@babel/preset-stage-3",
+    "@babel/preset-react"
   ],
   "plugins": [
-    "transform-decorators-legacy",
+    "babel-plugin-transform-decorators-legacy",
     [
-      "transform-class-properties",
+      "@babel/plugin-proposal-class-properties",
       {
         "loose": true
       }
     ]
-  ],
-  "env": {
-    "test": {
-      "plugins": [
-        "transform-es2015-modules-commonjs"
-      ]
-    },
-    "development": {
-      "plugins": [
-        "react-hot-loader/babel"
-      ]
-    },
-    "production": {
-      "plugins": [
-        "transform-react-remove-prop-types"
-      ]
-    }
-  }
+  ]
 }

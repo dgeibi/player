@@ -8,17 +8,12 @@ import './styles/style.scss'
 import PlayerProvider from './components/PlayerProvider'
 import Shell from './components/Shell'
 
-const HOT = module.hot
-if (!HOT) {
+if (process.env.NODE_ENV === 'production') {
   loadSW()
 }
 
-const render = (ele, hydrate = false) => {
-  if (hydrate) {
-    ReactDOM.hydrate(ele, document.getElementById('root'))
-  } else {
-    ReactDOM.render(ele, document.getElementById('root'))
-  }
+const render = ele => {
+  ReactDOM.render(ele, document.getElementById('root'))
 }
 
 const audio = document.querySelector('.player__audio')
@@ -31,21 +26,9 @@ const Root = () => (
   </PlayerProvider>
 )
 
-if (HOT) {
-  const { AppContainer } = require('react-hot-loader')
-
-  render(<AppContainer>
-    <Root />
-  </AppContainer>)
-
+render(Root())
+if (process.env.NODE_ENV === 'development' && module.hot) {
   module.hot.accept(['./components/Shell', './components/PlayerProvider'], () => {
-    render(
-      <AppContainer>
-        <Root />
-      </AppContainer>,
-      true
-    )
+    render(Root())
   })
-} else {
-  render(<Root />)
 }

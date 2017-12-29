@@ -43,7 +43,7 @@ class SongsManager extends React.Component {
       title: '操作',
       dataIndex: '',
       fixed: 'right',
-      width: 80,
+      width: 100,
       key: 'x',
       render: ({ key }) => (
         <span data-key={key} onClick={this.handleItemClick}>
@@ -66,11 +66,11 @@ class SongsManager extends React.Component {
     this.player.removeListener('update', this.updatePlayerState)
   }
 
-  handleTableSelectedChange = (selectedRowKeys) => {
+  handleTableSelectedChange = selectedRowKeys => {
     this.setState({ selectedRowKeys })
   }
 
-  handleItemClick = async (e) => {
+  handleItemClick = async e => {
     const { player } = this
     const { target } = e
     const { op } = target.dataset
@@ -127,7 +127,7 @@ class SongsManager extends React.Component {
     })
   }
 
-  handleModalInputChange = (playlistInputed) => {
+  handleModalInputChange = playlistInputed => {
     this.setState({
       playlistInputed,
     })
@@ -151,14 +151,16 @@ class SongsManager extends React.Component {
   getCompleteSrc(listsKeys) {
     const { playlistInputed, selectedListID } = this.state
     const { defaultList } = this
-    return listsKeys.filter(l => ![defaultList, playlistInputed, selectedListID].includes(l))
+    return listsKeys.filter(
+      l => ![defaultList, playlistInputed, selectedListID].includes(l)
+    )
   }
 
   getListOptions(listsKeys) {
     return listsKeys.map(l => <Option key={l}>{l}</Option>)
   }
 
-  handlePlayListSelect = (selectedListID) => {
+  handlePlayListSelect = selectedListID => {
     if (this.player.selectedListID !== selectedListID) {
       this.player.selectedListID = selectedListID
     }

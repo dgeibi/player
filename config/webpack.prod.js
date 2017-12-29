@@ -1,11 +1,11 @@
 const BabelMinifyWebpackPlugin = require('babel-minify-webpack-plugin')
-const CleanWebpackPlugin = require('clean-webpack-plugin')
 const WorkboxBuildWebpackPlugin = require('workbox-webpack-plugin')
 const path = require('path')
-const pkg = require('./package')
+const webpack = require('webpack')
+const { dist } = require('./env')
 
-const DIST_DIR = pkg.dist_dir
 module.exports = {
+  devtool: 'source-map',
   output: {
     publicPath: './',
   },
@@ -13,16 +13,14 @@ module.exports = {
     alias: {
       react: 'anujs',
       'react-dom': 'anujs',
-      'prop-types': 'anujs/lib/ReactPropTypes',
       'create-react-class': 'anujs/lib/createClass',
     },
   },
   plugins: [
-    new CleanWebpackPlugin([DIST_DIR]),
     new WorkboxBuildWebpackPlugin({
-      globDirectory: DIST_DIR,
+      globDirectory: path.basename(dist),
       globPatterns: ['**/*.{html,css,json,js}'],
-      swDest: path.join(DIST_DIR, 'sw.js'),
+      swDest: path.join(dist, 'sw.js'),
       clientsClaim: true,
       skipWaiting: true,
       runtimeCaching: [
@@ -47,5 +45,18 @@ module.exports = {
         comments: false,
       }
     ),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      minChunks: module => module.context && module.context.includes('node_modules'),
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'antd',
+      chunks: ['vendor'],
+      minChunks: module => module.context && /antd|rc-/.test(module.context),
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'manifest',
+      minChunks: Infinity,
+    }),
   ],
 }

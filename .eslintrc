@@ -1,11 +1,20 @@
 {
   "extends": [
-    "dgeibi/react"
+    "dgeibi/react",
+    "prettier"
   ],
   "rules": {
     "import/no-extraneous-dependencies": "off",
+    "import/no-duplicates": "off",
     "class-methods-use-this": "off",
     "global-require": "off",
     "no-console": "off"
+  },
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": "config/webpack.base.js"
+      }
+    }
   }
 }

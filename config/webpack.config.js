@@ -1,10 +1,12 @@
 const merge = require('webpack-merge')
-const path = require('path')
-const css = require('./config/css')
-const defineNodeEnv = require('./config/defineNodeEnv')
-const base = require('./webpack.config.base')
 
-const defaultInclude = [path.resolve(__dirname, 'src')]
+const css = require('./helpers/css')
+const analyzer = require('./helpers/analyzer')
+const defineNodeEnv = require('./helpers/defineNodeEnv')
+const base = require('./webpack.base')
+const { src } = require('./env')
+
+const defaultInclude = src
 
 module.exports = (env = {}) => {
   const isProduction = env.production === true
@@ -16,7 +18,7 @@ module.exports = (env = {}) => {
     defineNodeEnv(nodeEnv),
     css({
       rule: {
-        test: /\.less$/,
+        test: /\.css$/,
         use: [
           {
             loader: 'css-loader',
@@ -24,7 +26,6 @@ module.exports = (env = {}) => {
               minimize: true,
             },
           },
-          'less-loader',
         ],
       },
       extract: true,
@@ -49,10 +50,11 @@ module.exports = (env = {}) => {
       extract: isProduction,
       extractOptions: 'main.css',
     }),
+    analyzer(env.analyzer),
   ])
 
   if (isProduction) {
-    return merge(common, require('./webpack.config.prod'))
+    return merge(common, require('./webpack.prod'))
   }
-  return merge(common, require('./webpack.config.dev'))
+  return merge(common, require('./webpack.dev'))
 }
