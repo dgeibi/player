@@ -5,7 +5,6 @@ const webpack = require('webpack')
 const { dist } = require('./env')
 
 module.exports = {
-  devtool: 'source-map',
   output: {
     publicPath: './',
   },
