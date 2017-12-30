@@ -45,7 +45,6 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Player',
       template: 'src/template.ejs',
     }),
     new CopyWebpackPlugin([

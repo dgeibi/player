@@ -1,4 +1,4 @@
-# Player
+# Broken Music Player
 
 一个浏览器本地播放器
 

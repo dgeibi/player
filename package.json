@@ -29,6 +29,7 @@
     "is-promise": "^2.1.0",
     "nanoid": "^1.0.1",
     "prop-types": "^15.6.0",
+    "react-document-title": "^2.0.3",
     "react-feather": "^1.0.8",
     "uemitter": "0.0.4"
   },

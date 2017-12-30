@@ -1,6 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { message, Button } from 'antd'
+import DocumentTitle from 'react-document-title'
+
 import ControlsLeft from './ControlsLeft'
 import ControlsRight from './ControlsRight'
 import ProcessBar from './ProcessBar'
@@ -28,10 +30,7 @@ class App extends React.Component {
   playerEvents = eventObservable(this.player)
 
   getMetaData() {
-    const {
-      title = TITLE_FALLBACK,
-      artist = ARTIST_FALLBACK,
-    } = this.player.getTrackMetaData()
+    const { title, artist } = this.player.getTrackMetaData()
     return {
       title,
       artist,
@@ -45,8 +44,8 @@ class App extends React.Component {
 
     this.playerEvents.on('empty', () => {
       this.setState({
-        title: TITLE_FALLBACK,
-        artist: ARTIST_FALLBACK,
+        title: undefined,
+        artist: undefined,
       })
     })
 
@@ -87,10 +86,21 @@ class App extends React.Component {
   }
 
   render() {
-    const { title, playingListID, loading, artist } = this.state
+    const { playingListID, loading } = this.state
+    let { title, artist } = this.state
+    const docTitle = !title
+      ? 'Broken Music Player'
+      : !artist ? title : `${title} - ${artist}`
+    if (!title) {
+      title = TITLE_FALLBACK
+    }
+    if (!artist) {
+      artist = ARTIST_FALLBACK
+    }
 
     return (
       <main>
+        <DocumentTitle title={docTitle} />
         <Button
           loading={loading}
           className="file-selector"
