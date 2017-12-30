@@ -8,7 +8,8 @@ import SongsManager from './SongsManager'
 
 import eventObservable from '../utils/event-observable'
 
-const TITLE_FALLBACK = '什么也没有'
+const TITLE_FALLBACK = '无标题'
+const ARTIST_FALLBACK = '未知艺术家'
 class App extends React.Component {
   static contextTypes = {
     player: PropTypes.object.isRequired,
@@ -20,6 +21,7 @@ class App extends React.Component {
 
   state = {
     title: TITLE_FALLBACK,
+    artist: ARTIST_FALLBACK,
     playingListID: this.player.playingListID,
     loading: false,
   }
@@ -27,19 +29,19 @@ class App extends React.Component {
   playerEvents = eventObservable(this.player)
 
   componentWillMount() {
-    this.playerEvents.on('metadata', (data) => {
+    this.playerEvents.on('metadata', data => {
       if (!data) return
       const { artist, title } = data
-      let ret = title
-      if (artist) ret += ` - ${artist}`
       this.setState({
-        title: ret,
+        title: title || TITLE_FALLBACK,
+        artist: artist || ARTIST_FALLBACK,
       })
     })
 
     this.playerEvents.on('empty', () => {
       this.setState({
         title: TITLE_FALLBACK,
+        artist: ARTIST_FALLBACK,
       })
     })
 
@@ -50,7 +52,7 @@ class App extends React.Component {
       })
     })
 
-    this.playerEvents.on('add-fail', (filename) => {
+    this.playerEvents.on('add-fail', filename => {
       message.error(`无法添加 ${filename}`)
     })
   }
@@ -59,11 +61,11 @@ class App extends React.Component {
     this.playerEvents.removeAllObservables()
   }
 
-  saveFileRef = (node) => {
+  saveFileRef = node => {
     this.file = node
   }
 
-  handleFile = async (e) => {
+  handleFile = async e => {
     this.setState({
       loading: true,
     })
@@ -80,7 +82,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { title, playingListID, loading } = this.state
+    const { title, playingListID, loading, artist } = this.state
 
     return (
       <main>
@@ -101,8 +103,11 @@ class App extends React.Component {
         </Button>
         <div className="player">
           <header className="player__title">
-            <h3>{title}</h3>
-            <section>歌单：{playingListID}</section>
+            <h3 className="player__meta">{title}</h3>
+            <h4 className="player__meta">{artist}</h4>
+            <h4 className="player__meta" title="当前歌单">
+              {playingListID}
+            </h4>
           </header>
           <div className="player__body">
             <ProcessBar />

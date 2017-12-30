@@ -193,12 +193,12 @@ class SongsManager extends React.Component {
 
     return (
       <div>
-        <div style={{ margin: '16px 0px' }}>
+        <div style={{ margin: '16px 0px 5px' }}>
           <span style={{ marginLeft: 8 }}>
             {hasSelected ? `已选择 ${selectedRowKeys.length} 首` : ''}
           </span>
         </div>
-        <div style={{ marginBottom: 16 }}>
+        <div className="player__listActions">
           <Select
             style={{ width: 100 }}
             value={selectedListID}

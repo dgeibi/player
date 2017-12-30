@@ -5,6 +5,7 @@ import { Pause, Play, SkipBack, SkipForward } from 'react-feather'
 
 const pad = n => (Number(n) < 10 ? `0${n}` : String(n))
 const convertSecs = s => `${Math.floor(s / 60) || 0}:${pad(Math.floor(s % 60) || 0)}`
+const BTN_SIZE = 28
 
 class ControlsLeft extends React.Component {
   static contextTypes = {
@@ -70,20 +71,32 @@ class ControlsLeft extends React.Component {
 
     return (
       <Row className="player__controls--left" type="flex" justify="center" align="middle">
-        <span className="player__current-time">{convertSecs(currentTime)}</span>/<span className="player__duration">{convertSecs(duration)}</span>
+        <span className="player__current-time">{convertSecs(currentTime)}</span>/<span className="player__duration">
+          {convertSecs(duration)}
+        </span>
         <button
           className="player__button"
           type="button"
           title={playing ? '暂停' : '播放'}
           onClick={this.handleToggle}
         >
-          {playing ? <Pause /> : <Play />}
+          {playing ? <Pause size={BTN_SIZE} /> : <Play size={BTN_SIZE} />}
         </button>
-        <button className="player__button" type="button" title="上一首" onClick={this.prev}>
-          <SkipBack />
+        <button
+          className="player__button"
+          type="button"
+          title="上一首"
+          onClick={this.prev}
+        >
+          <SkipBack size={BTN_SIZE} />
         </button>
-        <button className="player__button" type="button" title="下一首" onClick={this.next}>
-          <SkipForward />
+        <button
+          className="player__button"
+          type="button"
+          title="下一首"
+          onClick={this.next}
+        >
+          <SkipForward size={BTN_SIZE} />
         </button>
       </Row>
     )

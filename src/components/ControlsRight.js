@@ -12,7 +12,7 @@ class ControlsRight extends React.Component {
   audio = this.context.audio
   player = this.context.player
 
-  handleVolumeChange = (e) => {
+  handleVolumeChange = e => {
     this.audio.volume = e.target.value
   }
 
@@ -64,14 +64,14 @@ class ControlsRight extends React.Component {
           title={loop ? '取消循环播放' : '循环播放'}
           onClick={this.handleLoopClick}
         >
-          <Repeat />
+          <Repeat size={28} />
         </button>
         <button
           className="player__button"
           title={muted ? '取消静音' : '静音'}
           onClick={this.handleMuteClick}
         >
-          <Volume volume={volume} muted={muted} />
+          <Volume volume={volume} muted={muted} size={28} />
         </button>
         <input
           className="player__volume player__range"
