@@ -23,9 +23,9 @@ const render = () => {
 }
 
 if (process.env.NODE_ENV === 'development') {
-  if (!process.env.REACT) {
-    require('anujs/lib/devtools.js')
-  }
+  // if (!process.env.REACT) {
+  //   require('anujs/lib/devtools.js')
+  // }
 
   if (module.hot) {
     module.hot.accept(['./components/Shell', './components/PlayerProvider'], render)
