@@ -13,7 +13,6 @@ module.exports = {
       globDirectory: path.basename(dist),
       globPatterns: ['**/*.{html,css,json,js}'],
       swDest: path.join(dist, 'sw.js'),
-      clientsClaim: true,
       skipWaiting: true,
       runtimeCaching: [
         {
@@ -30,7 +29,6 @@ module.exports = {
     }),
     new BabelMinifyWebpackPlugin(
       {
-        removeConsole: true,
         removeDebugger: true,
       },
       {

@@ -1,16 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { message } from 'antd'
 
-import loadSW from './loadSW'
+import isSWUpdateAvailable from './loadSW'
 import Player from './Player'
 import './styles/style.scss'
 
 import PlayerProvider from './components/PlayerProvider'
 import Shell from './components/Shell'
-
-if (process.env.NODE_ENV === 'production') {
-  loadSW()
-}
 
 const audio = document.querySelector('.player__audio')
 /** @type {Promise<Player>} */
@@ -36,3 +33,10 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 render()
+
+isSWUpdateAvailable.then(isAvailable => {
+  if (isAvailable) {
+    console.log('[sw]: has update!')
+    message.info('更新成功，刷新页面以切换至新版 ^_^', 7)
+  }
+})
