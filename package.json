@@ -4,6 +4,7 @@
   "description": "a simple music player",
   "scripts": {
     "start": "webpack-dev-server --config config/webpack.config.js",
+    "start:react": "webpack-dev-server --env.react --config config/webpack.config.js",
     "start:prod": "npm run build && serve dist",
     "build": "rimraf dist && webpack --env.production --config config/webpack.config.js",
     "analyze": "webpack --env.production --env.analyzer --config config/webpack.config.js",
@@ -64,6 +65,8 @@
     "postcss-scss": "^1.0.2",
     "precss": "^2.0.0",
     "prettier": "^1.9.2",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
     "rimraf": "^2.6.2",
     "serve": "^6.4.2",
     "style-loader": "^0.19.1",

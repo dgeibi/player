@@ -12,23 +12,27 @@ if (process.env.NODE_ENV === 'production') {
   loadSW()
 }
 
-const render = ele => {
-  ReactDOM.render(ele, document.getElementById('root'))
-}
-
 const audio = document.querySelector('.player__audio')
 /** @type {Promise<Player>} */
 const playerPromise = Player.fromStore({ audio })
 
-const Root = () => (
-  <PlayerProvider playerPromise={playerPromise} audio={audio}>
-    <Shell />
-  </PlayerProvider>
-)
-
-render(Root())
-if (process.env.NODE_ENV === 'development' && module.hot) {
-  module.hot.accept(['./components/Shell', './components/PlayerProvider'], () => {
-    render(Root())
-  })
+const render = () => {
+  ReactDOM.render(
+    <PlayerProvider playerPromise={playerPromise} audio={audio}>
+      <Shell />
+    </PlayerProvider>,
+    document.getElementById('root')
+  )
 }
+
+if (process.env.NODE_ENV === 'development') {
+  if (!process.env.REACT) {
+    require('anujs/lib/devtools.js')
+  }
+
+  if (module.hot) {
+    module.hot.accept(['./components/Shell', './components/PlayerProvider'], render)
+  }
+}
+
+render()

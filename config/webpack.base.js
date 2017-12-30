@@ -10,13 +10,6 @@ module.exports = {
   entry: {
     app: './src/index.js',
   },
-  resolve: {
-    alias: {
-      react: 'anujs',
-      'react-dom': 'anujs',
-      'create-react-class': 'anujs/lib/createClass',
-    },
-  },
   output: {
     path: dist,
     filename: '[name].js',

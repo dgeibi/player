@@ -1,8 +1,9 @@
 const merge = require('webpack-merge')
+const webpack = require('webpack')
 
 const css = require('./helpers/css')
 const analyzer = require('./helpers/analyzer')
-const defineNodeEnv = require('./helpers/defineNodeEnv')
+const plugin = require('./helpers/plugin')
 const base = require('./webpack.base')
 const { src } = require('./env')
 
@@ -13,9 +14,23 @@ module.exports = (env = {}) => {
   const nodeEnv = !isProduction ? 'development' : 'production'
   process.env.NODE_ENV = nodeEnv
 
-  const common = merge([
+  return merge([
     base,
-    defineNodeEnv(nodeEnv),
+    env.react || {
+      resolve: {
+        alias: {
+          react: 'anujs',
+          'react-dom': 'anujs',
+          'create-react-class': 'anujs/lib/createClass',
+        },
+      },
+    },
+    plugin(
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(nodeEnv),
+        'process.env.REACT': env.react ? 'true' : 'false',
+      })
+    ),
     css({
       rule: {
         test: /\.css$/,
@@ -51,10 +66,6 @@ module.exports = (env = {}) => {
       extractOptions: 'main.css',
     }),
     analyzer(env.analyzer),
+    isProduction ? require('./webpack.prod') : require('./webpack.dev'),
   ])
-
-  if (isProduction) {
-    return merge(common, require('./webpack.prod'))
-  }
-  return merge(common, require('./webpack.dev'))
 }
