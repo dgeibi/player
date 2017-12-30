@@ -20,22 +20,27 @@ class App extends React.Component {
   player = this.context.player
 
   state = {
-    title: TITLE_FALLBACK,
-    artist: ARTIST_FALLBACK,
+    ...this.getMetaData(),
     playingListID: this.player.playingListID,
     loading: false,
   }
 
   playerEvents = eventObservable(this.player)
 
+  getMetaData() {
+    const {
+      title = TITLE_FALLBACK,
+      artist = ARTIST_FALLBACK,
+    } = this.player.getTrackMetaData()
+    return {
+      title,
+      artist,
+    }
+  }
+
   componentWillMount() {
-    this.playerEvents.on('metadata', data => {
-      if (!data) return
-      const { artist, title } = data
-      this.setState({
-        title: title || TITLE_FALLBACK,
-        artist: artist || ARTIST_FALLBACK,
-      })
+    this.playerEvents.on('metadata', () => {
+      this.setState(this.getMetaData())
     })
 
     this.playerEvents.on('empty', () => {

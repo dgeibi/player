@@ -12,6 +12,7 @@ import ensureNumber from './utils/ensure-number'
 const FALLBACK_PLAYLIST = '所有歌曲'
 const FALLBACK_VOL = 0.5
 const FALLBACK_TIME = 0
+const noopObj = {}
 
 const withObserve = shouldSet =>
   function observe(target, key) {
@@ -49,7 +50,8 @@ const observeWithStore = withObserve(savePlayerKey)
 const observeListID = withObserve(function emitList(key, value) {
   if (this.playlists.has(value)) {
     return savePlayerKey(key, value).then(() =>
-      this.emit('update', key.replace(/ID$/, ''), this.playlists.get(value)))
+      this.emit('update', key.replace(/ID$/, ''), this.playlists.get(value))
+    )
   }
   return false
 })
@@ -107,7 +109,7 @@ class Player {
     })
 
     this.audio.addEventListener('loadeddata', () => {
-      this.emit('metadata', this.metaDatas.get(this.currentTrack))
+      this.emit('metadata')
     })
 
     this.audio.addEventListener('ended', () => {
@@ -128,7 +130,7 @@ class Player {
 
     const playlist = this.playlists.get(this.playingListID)
 
-    playlist.setTrack().then((setted) => {
+    playlist.setTrack().then(setted => {
       if (!setted) return
       this.audio.currentTime = this.currentTime
     })
@@ -396,6 +398,10 @@ class Player {
     const { metaDatas } = this
     const selectedList = this.getSelectedList()
     return [...selectedList.keys].map(k => metaDatas.get(k))
+  }
+
+  getTrackMetaData() {
+    return this.currentTrack ? this.metaDatas.get(this.currentTrack) : noopObj
   }
 }
 
