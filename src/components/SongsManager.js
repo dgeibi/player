@@ -35,11 +35,13 @@ class SongsManager extends React.Component {
       title: '歌曲标题',
       dataIndex: 'title',
       key: 'title',
+      width: 400,
     },
     {
       title: '歌手',
       dataIndex: 'artist',
       key: 'artist',
+      width: 100,
     },
     {
       title: '操作',
@@ -265,7 +267,7 @@ class SongsManager extends React.Component {
           dataSource={metaDatas}
           size="small"
           rowKey="key"
-          scroll={{ x: 450 }}
+          scroll={{ x: 500 }}
         />
       </div>
     )
