@@ -1,4 +1,4 @@
-const BabelMinifyWebpackPlugin = require('babel-minify-webpack-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const WorkboxBuildWebpackPlugin = require('workbox-webpack-plugin')
 const path = require('path')
 const webpack = require('webpack')
@@ -27,14 +27,17 @@ module.exports = {
         },
       ],
     }),
-    new BabelMinifyWebpackPlugin(
-      {
-        removeDebugger: true,
+    new UglifyJsPlugin({
+      uglifyOptions: {
+        ie8: false,
+        ecma: 8,
+        output: {
+          comments: false,
+          beautify: false,
+        },
+        warnings: false,
       },
-      {
-        comments: false,
-      }
-    ),
+    }),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
       minChunks: module => module.context && module.context.includes('node_modules'),
