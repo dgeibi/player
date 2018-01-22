@@ -21,9 +21,9 @@
 
 构建生产环境版本：`npm run build`，结果在`dist`
 
-构建开发环境版本并启动服务器：`npm run start`
+构建开发环境版本并启动服务器：`npm run dev`
 
-构建生产环境版本并启动服务器：`npm run start:prod`
+构建生产环境版本并启动服务器：`npm run serve`
 
 ## LICENSE
 

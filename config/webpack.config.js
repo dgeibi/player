@@ -22,6 +22,7 @@ module.exports = (env = {}) => {
           react: 'anujs',
           'react-dom': 'anujs',
           'create-react-class': 'anujs/lib/createClass',
+          'prop-types': 'anujs/lib/ReactPropTypes',
         },
       },
     },

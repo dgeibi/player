@@ -88,9 +88,7 @@ class App extends React.Component {
   render() {
     const { playingListID, loading } = this.state
     let { title, artist } = this.state
-    const docTitle = !title
-      ? 'Broken Music Player'
-      : !artist ? title : `${title} - ${artist}`
+    const docTitle = getDocumetTitle({ title, artist })
     if (!title) {
       title = TITLE_FALLBACK
     }
@@ -140,3 +138,9 @@ class App extends React.Component {
 }
 
 export default App
+
+function getDocumetTitle({ title, artist }) {
+  if (!title) return 'Broken Music Player'
+  if (!artist) return title
+  return `${title} - ${artist}`
+}
