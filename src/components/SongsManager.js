@@ -35,13 +35,13 @@ class SongsManager extends React.Component {
       title: '歌曲标题',
       dataIndex: 'title',
       key: 'title',
-      width: 400,
+      width: 300,
     },
     {
       title: '歌手',
       dataIndex: 'artist',
       key: 'artist',
-      width: 100,
+      width: 200,
     },
     {
       title: '操作',
