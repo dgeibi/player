@@ -1,9 +1,9 @@
 import EventEmitter from 'uemitter'
-import { parse as parseID3 } from 'id3-parser'
 import nanoid from 'nanoid'
 import isPromise from 'is-promise'
 import FA from 'fasy'
 
+import parseFile from './utils/id3FromFile'
 import PlayList from './PlayList'
 import { playListStore, playerStore, metaStore, addItem, deleteItem } from './stores'
 import ensureHasKey from './utils/ensure-has-key'
@@ -168,7 +168,7 @@ class Player {
   async addFiles(fileArr) {
     const { audio, metaDatas, emit } = this
     const files = Array.from(fileArr)
-    const tags = await Promise.all(files.map(parseID3))
+    const tags = await Promise.all(files.map(parseFile))
     const outputs = tags.map(getOutputs).filter(Boolean)
     const playlist = this.listOfAll
 
