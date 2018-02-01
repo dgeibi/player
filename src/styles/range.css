@@ -63,7 +63,7 @@
 
 [type='range'] {
   -webkit-appearance: none;
-  margin: calc(var(--thumb-height) / 2) 0;
+  margin: calc(var(--thumb-height) / 2) 1px;
   width: var(--track-width);
 
   &:focus {
