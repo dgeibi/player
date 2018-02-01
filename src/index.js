@@ -4,7 +4,7 @@ import { message } from 'antd'
 
 import isSWUpdateAvailable from './loadSW'
 import Player from './Player'
-import './styles/style.scss'
+import './styles/style.css'
 
 import PlayerProvider from './components/PlayerProvider'
 import Shell from './components/Shell'

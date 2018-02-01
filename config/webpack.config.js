@@ -35,6 +35,7 @@ module.exports = (env = {}) => {
     css({
       rule: {
         test: /\.css$/,
+        exclude: defaultInclude,
         use: [
           {
             loader: 'css-loader',
@@ -49,7 +50,7 @@ module.exports = (env = {}) => {
     }),
     css({
       rule: {
-        test: /\.scss$/,
+        test: /\.css$/,
         include: defaultInclude,
         use: [
           {
