@@ -1,5 +1,7 @@
-const cssnext = require('postcss-cssnext')
-
 module.exports = {
-  plugins: [cssnext],
+  plugins: {
+    'postcss-cssnext': {
+      browsers: 'last 2 versions',
+    },
+  },
 }

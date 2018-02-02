@@ -4,10 +4,10 @@
       "@babel/preset-env",
       {
         "modules": false,
-        "useBuiltIns": "usage"
+        "useBuiltIns": "usage",
+        "shippedProposals": true
       }
     ],
-    "@babel/preset-stage-3",
     "@babel/preset-react"
   ],
   "plugins": [

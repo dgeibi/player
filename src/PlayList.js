@@ -1,10 +1,5 @@
-/* eslint-disable no-underscore-dangle */
-import { blobStore, playListStore } from './stores'
-
 class PlayList {
-  constructor({
-    title, keys, pos, player,
-  } = {}) {
+  constructor({ title, keys, pos, player } = {}) {
     /** @type {Set<string>} */
     this.keys = new Set(keys)
 
@@ -15,14 +10,16 @@ class PlayList {
     this.pos = this.keys.size < pos ? 0 : Number(pos) || 0
 
     this.player = player
+    this.db = player.db
+
     if (!player) throw Error('player is required!')
 
     /** @type {HTMLAudioElement} */
     this.audio = this.player.audio
   }
 
-  static async getUrlByKey(key) {
-    const blob = await blobStore.get(key)
+  async getUrlByKey(key) {
+    const blob = await this.db.blobStore.get(key)
     if (blob) {
       return URL.createObjectURL(blob)
     }
@@ -47,7 +44,7 @@ class PlayList {
   destory() {
     const { title } = this
     this.keys = null
-    return playListStore.delete(title)
+    return this.db.playListStore.delete(title)
   }
 
   /**
@@ -91,7 +88,7 @@ class PlayList {
     if (toset) {
       this.player.currentTrack = key
       URL.revokeObjectURL(audio.src)
-      const newSrc = await PlayList.getUrlByKey(key)
+      const newSrc = await this.getUrlByKey(key)
       audio.src = newSrc
       this.save()
     }
@@ -100,7 +97,7 @@ class PlayList {
 
   save() {
     const { title, keys, pos } = this
-    return playListStore.setValue({ title, keys, pos })
+    return this.db.playListStore.setValue({ title, keys, pos })
   }
 
   async play(key) {

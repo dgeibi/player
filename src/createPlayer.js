@@ -5,9 +5,9 @@ import FA from 'fasy'
 
 import parseFile from './utils/id3FromFile'
 import PlayList from './PlayList'
-import { playListStore, playerStore, metaStore, addItem, deleteItem } from './stores'
 import ensureHasKey from './utils/ensure-has-key'
 import ensureNumber from './utils/ensure-number'
+import openDB from './openDB'
 
 const FALLBACK_PLAYLIST = '所有歌曲'
 const FALLBACK_VOL = 0.5
@@ -44,19 +44,20 @@ const withObserve = shouldSet =>
 
 const observe = withObserve()
 
-const savePlayerKey = (key, value) => playerStore.set(key, value)
-const observeWithStore = withObserve(savePlayerKey)
+const observeWithStore = withObserve(function savePlayerKey(key, value) {
+  return this.db.playerStore.set(key, value)
+})
 
 const observeListID = withObserve(function emitList(key, value) {
   if (this.playlists.has(value)) {
-    return savePlayerKey(key, value).then(() =>
-      this.emit('update', key.replace(/ID$/, ''), this.playlists.get(value))
-    )
+    return this.db.playerStore
+      .set(key, value)
+      .then(() => this.emit('update', key.replace(/ID$/, ''), this.playlists.get(value)))
   }
   return false
 })
 
-class Player {
+export class Player {
   @observe playing = false
   @observeListID selectedListID = FALLBACK_PLAYLIST
   @observeListID playingListID = FALLBACK_PLAYLIST
@@ -73,7 +74,10 @@ class Player {
     playingListID,
     currentTime,
     volume,
+    db,
   } = {}) {
+    this.db = db
+
     this.emitter = EventEmitter()
     Object.assign(this, this.emitter)
 
@@ -136,32 +140,6 @@ class Player {
     })
   }
 
-  static async fromStore(opts) {
-    const [playerOpts, playlistOpts, metaDataArr] = await Promise.all([
-      playerStore.pick([
-        'loop',
-        'volume',
-        'playingListID',
-        'selectedListID',
-        'currentTime',
-      ]),
-      playListStore.getAll(),
-      metaStore.getAll(),
-    ])
-
-    const metaDatas = metaDataArr.reduce((map, x) => map.set(x.key, x), new Map())
-
-    const audio = opts.audio || new Audio()
-
-    return new Player({
-      ...opts,
-      ...playerOpts,
-      audio,
-      metaDatas,
-      playlistOpts,
-    })
-  }
-
   /**
    * @param {Array<File>} fileArr
    */
@@ -174,7 +152,7 @@ class Player {
 
     if (outputs.length < 1) return
     const saveFileAndMetaData = async ({ key, metadata, file }) => {
-      await addItem({ key, metadata, file })
+      await this.db.addItem({ key, metadata, file })
       playlist.add(key)
       metaDatas.set(key, metadata)
     }
@@ -275,7 +253,7 @@ class Player {
 
       deleteKeys(this.metaDatas)
 
-      await Promise.all(items.map(deleteItem))
+      await Promise.all(items.map(this.db.deleteItem))
       await Promise.all(toBeSaveds)
 
       this.emitSelectedList()
@@ -405,4 +383,27 @@ class Player {
   }
 }
 
-export default Player
+export default async function createPlayer({ dbName, ...opts } = {}) {
+  const db = openDB(dbName)
+  const [playerOpts, playlistOpts, metaDataArr] = await Promise.all([
+    db.playerStore.pick([
+      'loop',
+      'volume',
+      'playingListID',
+      'selectedListID',
+      'currentTime',
+    ]),
+    db.playListStore.getAll(),
+    db.metaStore.getAll(),
+  ])
+  const metaDatas = metaDataArr.reduce((map, x) => map.set(x.key, x), new Map())
+  const audio = opts.audio || new Audio()
+  return new Player({
+    ...opts,
+    ...playerOpts,
+    audio,
+    metaDatas,
+    playlistOpts,
+    db,
+  })
+}

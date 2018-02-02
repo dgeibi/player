@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { message, Button } from 'antd'
 import DocumentTitle from 'react-document-title'
@@ -12,13 +12,13 @@ import eventObservable from '../utils/event-observable'
 
 const TITLE_FALLBACK = '无标题'
 const ARTIST_FALLBACK = '未知艺术家'
-class App extends React.Component {
+
+class PlayerApp extends Component {
   static contextTypes = {
     player: PropTypes.object.isRequired,
     audio: PropTypes.object.isRequired,
   }
 
-  /** @type {Player} */
   player = this.context.player
 
   state = {
@@ -137,7 +137,7 @@ class App extends React.Component {
   }
 }
 
-export default App
+export default PlayerApp
 
 function getDocumetTitle({ title, artist }) {
   if (!title) return 'Broken Music Player'

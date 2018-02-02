@@ -2,10 +2,10 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Spin } from 'antd'
 
-import App from './App'
+import PlayerApp from './PlayerApp'
 
 const Shell = (props, { player }) => {
-  if (player) return <App />
+  if (player) return <PlayerApp />
   return (
     <div className="shell-spin">
       <Spin tip="Loading..." />
