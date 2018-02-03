@@ -13,10 +13,6 @@
   vertical-align: middle;
 }
 
-.player__process-bar {
-  width: 100%;
-}
-
 #audio-file {
   display: none;
 }
@@ -65,6 +61,8 @@ main {
 
 .player__volume {
   width: 60px;
+  display: inline-block;
+  margin-right: 10px;
 }
 
 .shell-spin {

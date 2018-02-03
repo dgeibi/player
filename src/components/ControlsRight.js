@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Repeat } from 'react-feather'
+import { Slider } from 'antd'
 import Volume from './Volume'
 
 class ControlsRight extends React.Component {
@@ -12,8 +13,8 @@ class ControlsRight extends React.Component {
   audio = this.context.audio
   player = this.context.player
 
-  handleVolumeChange = e => {
-    this.audio.volume = e.target.value
+  handleVolumeChange = v => {
+    this.audio.volume = v
   }
 
   componentWillMount() {
@@ -57,6 +58,7 @@ class ControlsRight extends React.Component {
 
   render() {
     const { volume, loop, muted } = this.state
+    console.log(volume)
     return (
       <div className="player__controls--right">
         <button
@@ -66,6 +68,7 @@ class ControlsRight extends React.Component {
         >
           <Repeat size={28} />
         </button>
+
         <button
           className="player__button"
           title={muted ? '取消静音' : '静音'}
@@ -73,15 +76,15 @@ class ControlsRight extends React.Component {
         >
           <Volume volume={volume} muted={muted} size={28} />
         </button>
-        <input
-          className="player__volume player__range"
-          type="range"
-          min={0.0}
-          name="volume"
-          max={1.0}
+
+        <Slider
+          min={0}
+          max={1}
           step={0.01}
           value={volume}
-          onInput={this.handleVolumeChange}
+          onChange={this.handleVolumeChange}
+          tipFormatter={formatF}
+          className="player__volume"
         />
       </div>
     )
@@ -89,3 +92,7 @@ class ControlsRight extends React.Component {
 }
 
 export default ControlsRight
+
+function formatF(value) {
+  return `${+(value * 100).toPrecision(12)}%`
+}

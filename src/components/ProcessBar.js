@@ -1,5 +1,7 @@
 import React from 'react'
+import { Slider } from 'antd'
 import PropTypes from 'prop-types'
+import formatSec from '../utils/formatSec'
 
 class ProcessBar extends React.Component {
   static contextTypes = {
@@ -13,8 +15,8 @@ class ProcessBar extends React.Component {
     currentTime: this.audio.currentTime || 0,
   }
 
-  handleRangeChange = (e) => {
-    this.audio.currentTime = e.target.value
+  handleRangeChange = v => {
+    this.audio.currentTime = v
   }
 
   updateCurrentTime = () => {
@@ -38,16 +40,14 @@ class ProcessBar extends React.Component {
     const { currentTime } = this.state
 
     return (
-      <div>
-        <input
-          type="range"
-          min={0}
-          max={duration || 0}
-          value={currentTime}
-          onInput={this.handleRangeChange}
-          className="player__process-bar player__range"
-        />
-      </div>
+      <Slider
+        value={currentTime}
+        onChange={this.handleRangeChange}
+        min={0}
+        max={duration}
+        tipFormatter={formatSec}
+        disable={!duration}
+      />
     )
   }
 }

@@ -3,8 +3,8 @@ import PropTypes from 'prop-types'
 import { Row } from 'antd'
 import { Pause, Play, SkipBack, SkipForward } from 'react-feather'
 
-const pad = n => (Number(n) < 10 ? `0${n}` : String(n))
-const convertSecs = s => `${Math.floor(s / 60) || 0}:${pad(Math.floor(s % 60) || 0)}`
+import formatSec from '../utils/formatSec'
+
 const BTN_SIZE = 28
 
 class ControlsLeft extends React.Component {
@@ -71,8 +71,8 @@ class ControlsLeft extends React.Component {
 
     return (
       <Row className="player__controls--left" type="flex" justify="center" align="middle">
-        <span className="player__current-time">{convertSecs(currentTime)}</span>/<span className="player__duration">
-          {convertSecs(duration)}
+        <span className="player__current-time">{formatSec(currentTime)}</span>/<span className="player__duration">
+          {formatSec(duration)}
         </span>
         <button
           className="player__button"
