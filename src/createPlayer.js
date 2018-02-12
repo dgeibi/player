@@ -5,7 +5,7 @@ import FA from 'fasy'
 import { readAsArrayBuffer } from 'promise-file-reader'
 import { parse } from 'id3-parser'
 
-import readFile from './utils/readFile'
+import getKey from './utils/getKey'
 import PlayList from './PlayList'
 import ensureHasKey from './utils/ensure-has-key'
 import ensureNumber from './utils/ensure-number'
@@ -177,7 +177,7 @@ export class Player {
       }
       const arrayBuffer = await readAsArrayBuffer(file)
       const buffer = new Uint8Array(arrayBuffer)
-      const key = await readFile(arrayBuffer)
+      const key = await getKey(arrayBuffer)
       if (metaDatas.has(key)) {
         return null
       }
