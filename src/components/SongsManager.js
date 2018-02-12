@@ -1,3 +1,4 @@
+/* eslint-disable no-script-url */
 import { Button, Table, Modal, AutoComplete, Select } from 'antd'
 import React from 'react'
 
@@ -46,10 +47,10 @@ class SongsManager extends React.Component {
       key: 'x',
       render: ({ key }) => (
         <span data-key={key} onClick={this.handleItemClick}>
-          <a href="#op" data-op="delete">
+          <a href="javascript:void(0)" data-op="delete">
             删除
           </a>&nbsp;&nbsp;&nbsp;
-          <a href="#op" data-op="play">
+          <a href="javascript:void(0)" data-op="play">
             播放
           </a>
         </span>
