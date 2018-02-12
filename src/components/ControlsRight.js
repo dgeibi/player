@@ -60,7 +60,7 @@ class ControlsRight extends React.Component {
     const { volume, loop, muted } = this.state
     console.log(volume)
     return (
-      <div className="player__controls--right">
+      <div className="player__controls--right flex-center">
         <button
           className={`player__button ${loop ? 'player__loop' : 'player__loop--inactive'}`}
           title={loop ? '取消循环播放' : '循环播放'}

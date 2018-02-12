@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Row } from 'antd'
 import { Pause, Play, SkipBack, SkipForward } from 'react-feather'
 
 import formatSec from '../utils/formatSec'
@@ -70,7 +69,7 @@ class ControlsLeft extends React.Component {
     const { duration } = this.context
 
     return (
-      <Row className="player__controls--left" type="flex" justify="center" align="middle">
+      <div className="player__controls--left flex-center">
         <span className="player__current-time">{formatSec(currentTime)}</span>/<span className="player__duration">
           {formatSec(duration)}
         </span>
@@ -98,7 +97,7 @@ class ControlsLeft extends React.Component {
         >
           <SkipForward size={BTN_SIZE} />
         </button>
-      </Row>
+      </div>
     )
   }
 }

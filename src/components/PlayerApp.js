@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { message, Button } from 'antd'
+import { message } from 'antd'
 import DocumentTitle from 'react-document-title'
 
 import ControlsLeft from './ControlsLeft'
 import ControlsRight from './ControlsRight'
 import ProcessBar from './ProcessBar'
 import SongsManager from './SongsManager'
+import FileBtn from './FileBtn'
 
 import eventObservable from '../utils/event-observable'
 
@@ -24,7 +25,6 @@ class PlayerApp extends Component {
   state = {
     ...this.getMetaData(),
     playingListID: this.player.playingListID,
-    loading: false,
   }
 
   playerEvents = eventObservable(this.player)
@@ -65,28 +65,10 @@ class PlayerApp extends Component {
     this.playerEvents.removeAllObservables()
   }
 
-  saveFileRef = node => {
-    this.file = node
-  }
-
-  handleFile = async e => {
-    this.setState({
-      loading: true,
-    })
-    const files = Array.from(e.target.files)
-    e.target.value = null
-    await this.player.addFiles(files)
-    this.setState({
-      loading: false,
-    })
-  }
-
-  handleFileBtnClick = () => {
-    this.file.click()
-  }
+  handleFileChange = files => this.player.addFiles(Array.from(files))
 
   render() {
-    const { playingListID, loading } = this.state
+    const { playingListID } = this.state
     let { title, artist } = this.state
     const docTitle = getDocumetTitle({ title, artist })
     if (!title) {
@@ -99,21 +81,13 @@ class PlayerApp extends Component {
     return (
       <main>
         <DocumentTitle title={docTitle} />
-        <Button
-          loading={loading}
+        <FileBtn
           className="file-selector"
-          onClick={this.handleFileBtnClick}
-        >
-          加载本地音乐
-          <input
-            type="file"
-            id="audio-file"
-            accept="audio/*"
-            multiple
-            onChange={this.handleFile}
-            ref={this.saveFileRef}
-          />
-        </Button>
+          children="加载本地音乐"
+          accept="audio/*"
+          multiple
+          onChange={this.handleFileChange}
+        />
         <div className="player">
           <header className="player__title">
             <h3 className="player__meta">{title}</h3>

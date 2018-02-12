@@ -1,0 +1,60 @@
+.player {
+  margin-top: 15px;
+}
+
+.player__controls--right {
+  float: right;
+}
+
+.player__controls--left {
+  float: left;
+  vertical-align: middle;
+}
+
+.player__button {
+  padding: 3px;
+  margin: 0;
+  display: inline-block;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.player__button:focus {
+  outline: 0;
+}
+
+.player__button svg {
+  padding: 1px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.player__button:focus svg,
+.player__button:hover svg {
+  border: 1px solid #40a9ff;
+}
+
+.player__loop--inactive {
+  opacity: 0.4;
+}
+
+.player__controls {
+  overflow: hidden;
+}
+
+.player__volume {
+  width: 60px;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.player__meta {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.player__listActions > * {
+  margin-bottom: 7px;
+}
