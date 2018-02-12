@@ -181,7 +181,7 @@ export class Player {
       if (metaDatas.has(key)) {
         return null
       }
-      const { album, artist, title } = parse(buffer)
+      const { album, artist, title } = await parse(buffer)
       const { name } = file
       const metadata = {
         key,
