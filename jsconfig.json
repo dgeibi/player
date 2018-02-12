@@ -2,9 +2,14 @@
   "compilerOptions": {
     "target": "ESNext",
     "experimentalDecorators": true,
-    "jsx": "react"
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
   },
   "include": [
     "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
