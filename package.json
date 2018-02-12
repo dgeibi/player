@@ -31,9 +31,10 @@
     "id3-parser": "^2.0.0",
     "idb": "^2.0.4",
     "is-promise": "^2.1.0",
-    "nanoid": "^1.0.1",
+    "promise-file-reader": "^1.0.0",
     "react-document-title": "^2.0.3",
     "react-feather": "^1.0.8",
+    "sha.js": "^2.4.10",
     "uemitter": "0.0.4"
   },
   "devDependencies": {
@@ -72,7 +73,8 @@
     "webpack-bundle-analyzer": "^2.10.0",
     "webpack-dev-server": "^2.11.1",
     "webpack-merge": "^4.1.1",
-    "workbox-webpack-plugin": "^2.1.2"
+    "workbox-webpack-plugin": "^2.1.2",
+    "worker-loader": "^1.1.0"
   },
   "prettier": {
     "semi": false,

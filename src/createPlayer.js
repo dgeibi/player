@@ -1,9 +1,11 @@
 import EventEmitter from 'uemitter'
-import nanoid from 'nanoid'
+
 import isPromise from 'is-promise'
 import FA from 'fasy'
+import { readAsArrayBuffer } from 'promise-file-reader'
+import { parse } from 'id3-parser'
 
-import parseFile from './utils/id3FromFile'
+import readFile from './utils/readFile'
 import PlayList from './PlayList'
 import ensureHasKey from './utils/ensure-has-key'
 import ensureNumber from './utils/ensure-number'
@@ -141,13 +143,11 @@ export class Player {
   }
 
   /**
-   * @param {Array<File>} fileArr
+   * @param {Array<File>} files
    */
-  async addFiles(fileArr) {
+  async addFiles(files) {
     const { audio, metaDatas, emit } = this
-    const files = Array.from(fileArr)
-    const tags = await Promise.all(files.map(parseFile))
-    const outputs = tags.map(getOutputs).filter(Boolean)
+    const outputs = (await Promise.all(files.map(handleFile))).filter(Boolean)
     const playlist = this.listOfAll
 
     if (outputs.length < 1) return
@@ -168,20 +168,20 @@ export class Player {
       await this.getPlayingList().setTrack()
     }
 
-    function getOutputs(tag, index) {
-      const { album, artist, title } = tag
-      const file = files[index]
-
+    async function handleFile(file) {
       const { type } = file
-
       // android's bug: type is empty
       if (type !== '' && !audio.canPlayType(type)) {
         emit('add-fail', file.name)
         return null
       }
-
-      const key = nanoid()
-
+      const arrayBuffer = await readAsArrayBuffer(file)
+      const buffer = new Uint8Array(arrayBuffer)
+      const key = await readFile(arrayBuffer)
+      if (metaDatas.has(key)) {
+        return null
+      }
+      const { album, artist, title } = parse(buffer)
       const { name } = file
       const metadata = {
         key,
@@ -191,7 +191,6 @@ export class Player {
         name,
       }
       metadata.title = metadata.title || metadata.name.replace(/\.\S*?$/, '')
-
       return { key, metadata, file }
     }
   }
