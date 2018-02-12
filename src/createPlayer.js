@@ -177,11 +177,11 @@ export class Player {
       }
       const arrayBuffer = await readAsArrayBuffer(file)
       const buffer = new Uint8Array(arrayBuffer)
+      const { album, artist, title } = parse(buffer)
       const key = await getKey(arrayBuffer)
       if (metaDatas.has(key)) {
         return null
       }
-      const { album, artist, title } = await parse(buffer)
       const { name } = file
       const metadata = {
         key,
