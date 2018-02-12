@@ -77,7 +77,7 @@ export default class PlayerProvider extends Component {
     }
     return {
       player,
-      duration,
+      duration: Math.floor(duration),
       audio: player.audio,
     }
   }

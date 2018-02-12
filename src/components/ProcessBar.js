@@ -47,7 +47,7 @@ class ProcessBar extends React.Component {
               value={audio.currentTime}
               onChange={this.handleRangeChange}
               min={0}
-              max={Math.floor(duration)}
+              max={duration}
               tipFormatter={formatSec}
               disable={!duration}
             />
