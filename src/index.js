@@ -12,10 +12,7 @@ const audio = new Audio()
 const playerPromise = createPlayer({ audio })
 
 const render = () => {
-  ReactDOM.render(
-    <App audio={audio} playerPromise={playerPromise} />,
-    document.getElementById('root')
-  )
+  ReactDOM.render(<App playerPromise={playerPromise} />, document.getElementById('root'))
 }
 
 if (process.env.NODE_ENV === 'development') {

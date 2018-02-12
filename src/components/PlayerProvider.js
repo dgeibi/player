@@ -2,11 +2,13 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import createReactContext from 'create-react-context'
 
-export const Context = createReactContext({
+const defaultContext = {
   player: null,
   audio: null,
   duration: 0,
-})
+}
+
+export const Context = createReactContext(defaultContext)
 
 export default class PlayerProvider extends Component {
   static propTypes = {
@@ -23,25 +25,19 @@ export default class PlayerProvider extends Component {
       this.addEvents(player)
       this.setState({
         player,
+        duration: player.audio.duration || 0,
       })
     })
   }
 
   state = {
-    duration: this.props.audio.duration || 0,
     player: null,
+    duration: NaN,
   }
 
   async componentWillReceiveProps(nextProps) {
     if (nextProps.playerPromise !== this.props.playerPromise) {
-      const player = await nextProps.playerPromise
-      if (player !== this.state.player) {
-        this.removeEvents(this.state.player)
-        this.addEvents(player)
-        this.setState({
-          player,
-        })
-      }
+      throw Error('not support change playerPromise')
     }
   }
 
@@ -75,11 +71,14 @@ export default class PlayerProvider extends Component {
   }
 
   getContextValue() {
-    const { duration, player } = this.state
+    const { player, duration } = this.state
+    if (!player) {
+      return defaultContext
+    }
     return {
       player,
-      audio: player && player.audio,
       duration,
+      audio: player.audio,
     }
   }
 
