@@ -1,34 +1,34 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { Repeat } from 'react-feather'
 import { Slider } from 'antd'
 import Volume from './Volume'
+import { Context } from './PlayerProvider'
 
 class ControlsRight extends React.Component {
-  static contextTypes = {
-    player: PropTypes.object.isRequired,
-    audio: PropTypes.object.isRequired,
-  }
-
-  audio = this.context.audio
-  player = this.context.player
-
   handleVolumeChange = v => {
     this.audio.volume = v
   }
 
-  componentWillMount() {
-    this.audio.addEventListener('volumechange', this.updateVolume)
-    this.player.on('update', this.updatePlayerState)
+  removeEvents = null
+
+  addEvents = player => {
+    player.audio.addEventListener('volumechange', this.updateVolume)
+    player.on('update', this.updatePlayerState)
+    this.removeEvents = () => {
+      player.audio.removeEventListener('volumechange', this.updateVolume)
+      player.removeListener('update', this.updatePlayerState)
+      this.removeEvents = null
+    }
   }
 
   componentWillUnmount() {
-    this.audio.removeEventListener('volumechange', this.updateVolume)
-    this.player.removeListener('update', this.updatePlayerState)
+    if (this.removeEvents) {
+      this.removeEvents()
+    }
   }
 
-  updateVolume = () => {
-    const { muted, volume } = this.audio
+  updateVolume = e => {
+    const { muted, volume } = e.target
     this.setState({
       volume,
       muted,
@@ -50,43 +50,52 @@ class ControlsRight extends React.Component {
     this.player.loop = !this.state.loop
   }
 
-  state = {
-    volume: this.audio.volume,
-    muted: this.audio.muted,
-    loop: this.player.loop,
-  }
+  state = {}
 
   render() {
-    const { volume, loop, muted } = this.state
-    console.log(volume)
     return (
-      <div className="player__controls--right flex-center">
-        <button
-          className={`player__button ${loop ? 'player__loop' : 'player__loop--inactive'}`}
-          title={loop ? '取消循环播放' : '循环播放'}
-          onClick={this.handleLoopClick}
-        >
-          <Repeat size={28} />
-        </button>
+      <Context.Consumer>
+        {({ player }) => {
+          const { volume, muted } = player.audio
+          const { loop } = player
+          if (!this.removeEvents) {
+            this.player = player
+            this.audio = player.audio
+            this.addEvents(player)
+          }
+          return (
+            <div className="player__controls--right flex-center">
+              <button
+                className={`player__button ${
+                  loop ? 'player__loop' : 'player__loop--inactive'
+                }`}
+                title={loop ? '取消循环播放' : '循环播放'}
+                onClick={this.handleLoopClick}
+              >
+                <Repeat size={28} />
+              </button>
 
-        <button
-          className="player__button"
-          title={muted ? '取消静音' : '静音'}
-          onClick={this.handleMuteClick}
-        >
-          <Volume volume={volume} muted={muted} size={28} />
-        </button>
+              <button
+                className="player__button"
+                title={muted ? '取消静音' : '静音'}
+                onClick={this.handleMuteClick}
+              >
+                <Volume volume={volume} muted={muted} size={28} />
+              </button>
 
-        <Slider
-          min={0}
-          max={1}
-          step={0.01}
-          value={volume}
-          onChange={this.handleVolumeChange}
-          tipFormatter={formatF}
-          className="player__volume"
-        />
-      </div>
+              <Slider
+                min={0}
+                max={1}
+                step={0.01}
+                value={volume}
+                onChange={this.handleVolumeChange}
+                tipFormatter={formatF}
+                className="player__volume"
+              />
+            </div>
+          )
+        }}
+      </Context.Consumer>
     )
   }
 }
@@ -94,5 +103,5 @@ class ControlsRight extends React.Component {
 export default ControlsRight
 
 function formatF(value) {
-  return `${+(value * 100).toPrecision(12)}%`
+  return `${Math.round(value * 100)}%`
 }

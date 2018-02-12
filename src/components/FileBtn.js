@@ -9,7 +9,7 @@ export default class FileBtn extends Component {
     loading: false,
   }
 
-  propTypes = {
+  static propTypes = {
     refInput: PropTypes.func,
     onClick: PropTypes.func,
     onChange: PropTypes.func,

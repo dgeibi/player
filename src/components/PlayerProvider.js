@@ -1,16 +1,16 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import createReactContext from 'create-react-context'
 
-export default class PlayerProvider extends React.Component {
-  static childContextTypes = {
-    player: PropTypes.object,
-    audio: PropTypes.object,
-    duration: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  }
+export const Context = createReactContext({
+  player: null,
+  audio: null,
+  duration: 0,
+})
 
+export default class PlayerProvider extends Component {
   static propTypes = {
     playerPromise: PropTypes.object.isRequired,
-    audio: PropTypes.object.isRequired,
     children: PropTypes.oneOfType([
       PropTypes.element,
       PropTypes.arrayOf(PropTypes.element),
@@ -19,8 +19,8 @@ export default class PlayerProvider extends React.Component {
 
   constructor(...args) {
     super(...args)
-
-    this.props.playerPromise.then((player) => {
+    this.props.playerPromise.then(player => {
+      this.addEvents(player)
       this.setState({
         player,
       })
@@ -36,6 +36,8 @@ export default class PlayerProvider extends React.Component {
     if (nextProps.playerPromise !== this.props.playerPromise) {
       const player = await nextProps.playerPromise
       if (player !== this.state.player) {
+        this.removeEvents(this.state.player)
+        this.addEvents(player)
         this.setState({
           player,
         })
@@ -43,21 +45,24 @@ export default class PlayerProvider extends React.Component {
     }
   }
 
-  async componentWillMount() {
-    this.props.audio.addEventListener('durationchange', this.updateDuration)
-    const player = await this.props.playerPromise
+  addEvents(player) {
+    if (!player) return
+    player.audio.addEventListener('durationchange', this.updateDuration)
     player.on('empty', this.resetDuration)
   }
 
-  async componentWillUnmount() {
-    this.props.audio.removeEventListener('durationchange', this.updateDuration)
-    const player = await this.props.playerPromise
+  removeEvents(player) {
+    if (!player) return
+    player.audio.removeEventListener('durationchange', this.updateDuration)
     player.removeListener('empty', this.resetDuration)
   }
 
-  updateDuration = () => {
-    const { duration } = this.props.audio
+  async componentWillUnmount() {
+    this.removeEvents(this.state.player)
+  }
 
+  updateDuration = e => {
+    const { duration } = e.target
     this.setState({
       duration,
     })
@@ -69,18 +74,20 @@ export default class PlayerProvider extends React.Component {
     })
   }
 
-  getChildContext() {
-    const { audio } = this.props
+  getContextValue() {
     const { duration, player } = this.state
     return {
       player,
-      audio,
+      audio: player && player.audio,
       duration,
     }
   }
 
   render() {
-    const { children } = this.props
-    return React.Children.only(children)
+    return (
+      <Context.Provider value={this.getContextValue()}>
+        {this.props.children}
+      </Context.Provider>
+    )
   }
 }

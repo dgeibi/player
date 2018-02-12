@@ -1,17 +1,12 @@
 import { Button, Table, Modal, AutoComplete, Select } from 'antd'
 import React from 'react'
-import PropTypes from 'prop-types'
 
 const { Option } = Select
 
 const autoCompleteFilter = (inputValue, option) =>
   option.props.children.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
 class SongsManager extends React.Component {
-  static contextTypes = {
-    player: PropTypes.object.isRequired,
-  }
-
-  player = this.context.player
+  player = this.props.player
   defaultList = this.player.listOfAll.title
 
   constructor(...args) {

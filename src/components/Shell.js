@@ -1,19 +1,20 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { Spin } from 'antd'
 
+import { Context } from './PlayerProvider'
 import PlayerApp from './PlayerApp'
 
-const Shell = (props, { player }) => {
-  if (player) return <PlayerApp />
-  return (
-    <div className="shell-spin">
-      <Spin tip="Loading..." />
-    </div>
-  )
-}
-Shell.contextTypes = {
-  player: PropTypes.object,
-}
+const Shell = () => (
+  <Context.Consumer>
+    {({ player }) => {
+      if (player) return <PlayerApp player={player} />
+      return (
+        <div className="shell-spin">
+          <Spin tip="Loading..." />
+        </div>
+      )
+    }}
+  </Context.Consumer>
+)
 
 export default Shell

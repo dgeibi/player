@@ -26,6 +26,7 @@
     "@babel/polyfill": "^7.0.0-beta.39",
     "antd": "^3.2.1",
     "anujs": "^1.2.9",
+    "create-react-context": "^0.1.6",
     "fasy": "^5.0.4",
     "id3-parser": "^2.0.0",
     "idb": "^2.0.4",

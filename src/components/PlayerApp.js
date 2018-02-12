@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
 import { message } from 'antd'
 import DocumentTitle from 'react-document-title'
 
@@ -15,12 +14,7 @@ const TITLE_FALLBACK = '无标题'
 const ARTIST_FALLBACK = '未知艺术家'
 
 class PlayerApp extends Component {
-  static contextTypes = {
-    player: PropTypes.object.isRequired,
-    audio: PropTypes.object.isRequired,
-  }
-
-  player = this.context.player
+  player = this.props.player
 
   state = {
     ...this.getMetaData(),
@@ -105,7 +99,7 @@ class PlayerApp extends Component {
           </div>
           <div className="player__playlist" />
         </div>
-        <SongsManager />
+        <SongsManager player={this.player} />
       </main>
     )
   }
