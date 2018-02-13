@@ -11,8 +11,7 @@
     "lint": "eslint .",
     "fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,scss}\"",
-    "precommit": "lint-staged",
-    "deploy": "sh deploy"
+    "precommit": "lint-staged"
   },
   "browserslist": [
     "chrome > 51",

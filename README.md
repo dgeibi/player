@@ -8,10 +8,7 @@
 1. 支持离线使用
 2. 缓存已添加的音乐文件到浏览器
 
-立即使用：
-
-- 国内：https://dgeibi.gitee.io/static/player/
-- 全球： https://player.dgeibi.xyz/
+立即使用：https://player.dgeibi.xyz/
 
 ## 构建
 
