@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { message } from 'antd'
 import DocumentTitle from 'react-document-title'
 
+import { Context } from './PlayerProvider'
 import ControlsLeft from './ControlsLeft'
 import ControlsRight from './ControlsRight'
 import ProcessBar from './ProcessBar'
@@ -91,11 +92,17 @@ class PlayerApp extends Component {
             </h4>
           </header>
           <div className="player__body">
-            <ProcessBar />
-            <div className="player__controls">
-              <ControlsLeft />
-              <ControlsRight />
-            </div>
+            <Context.Consumer>
+              {({ audio, duration, player }) => (
+                <>
+                  <ProcessBar duration={duration} audio={audio} />
+                  <div className="player__controls">
+                    <ControlsLeft duration={duration} player={player} audio={audio} />
+                    <ControlsRight player={player} audio={audio} />
+                  </div>
+                </>
+              )}
+            </Context.Consumer>
           </div>
           <div className="player__playlist" />
         </div>

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "webpack-dev-server --config config/webpack.config.js",
     "dev:react": "webpack-dev-server --env.react --config config/webpack.config.js",
-    "serve": "npm run build && serve dist",
+    "stage": "npm run build && serve dist",
     "build": "rimraf dist && webpack --env.production --config config/webpack.config.js",
     "analyze": "webpack --env.production --env.analyzer --config config/webpack.config.js",
     "lint": "eslint .",

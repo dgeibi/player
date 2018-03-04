@@ -2,10 +2,12 @@ import React from 'react'
 import { Slider } from 'antd'
 import formatSec from '../utils/formatSec'
 
-import { Context } from './PlayerProvider'
-
 class ProcessBar extends React.Component {
-  state = {}
+  constructor(props) {
+    super(props)
+    this.audio = props.audio
+    this.state = {}
+  }
 
   handleRangeChange = v => {
     this.audio.currentTime = v
@@ -19,41 +21,35 @@ class ProcessBar extends React.Component {
     })
   }
 
-  removeEvents = null
-  addEvents(audio) {
+  addEvents() {
+    const { audio } = this
     audio.addEventListener('timeupdate', this.updateCurrentTime)
-    this.removeEvents = () => {
-      audio.removeEventListener('timeupdate', this.updateCurrentTime)
-      this.removeEvents = null
-    }
+  }
+
+  removeEvents() {
+    const { audio } = this
+    audio.removeEventListener('timeupdate', this.updateCurrentTime)
   }
 
   componentWillUnmount() {
-    if (this.removeEvents) {
-      this.removeEvents()
-    }
+    this.removeEvents()
+  }
+
+  componentDidMount() {
+    this.addEvents()
   }
 
   render() {
+    const { audio, duration } = this.props
     return (
-      <Context.Consumer>
-        {({ audio, duration }) => {
-          if (!this.removeEvents) {
-            this.addEvents(audio)
-            this.audio = audio
-          }
-          return (
-            <Slider
-              value={audio.currentTime}
-              onChange={this.handleRangeChange}
-              min={0}
-              max={duration}
-              tipFormatter={formatSec}
-              disable={!duration}
-            />
-          )
-        }}
-      </Context.Consumer>
+      <Slider
+        value={audio.currentTime}
+        onChange={this.handleRangeChange}
+        min={0}
+        max={duration}
+        tipFormatter={formatSec}
+        disable={!duration}
+      />
     )
   }
 }

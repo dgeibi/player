@@ -37,13 +37,14 @@ export default class FileBtn extends Component {
 
   handleFile = async e => {
     const { onChange } = this.props
+    const { target } = e
     this.setState({
       loading: true,
     })
     if (typeof onChange === 'function') {
-      await onChange(e.target.files)
+      await onChange(target.files)
     }
-    e.target.value = null
+    target.value = null
     this.setState({
       loading: false,
     })

@@ -7,11 +7,11 @@ const { Option } = Select
 const autoCompleteFilter = (inputValue, option) =>
   option.props.children.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
 class SongsManager extends React.Component {
-  player = this.props.player
-  defaultList = this.player.listOfAll.title
+  constructor(props) {
+    super(props)
+    this.player = props.player
+    this.defaultList = props.player.listOfAll.title
 
-  constructor(...args) {
-    super(...args)
     this.state = {
       selectedRowKeys: [],
       selectPlayListVisible: false,
