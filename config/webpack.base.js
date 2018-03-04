@@ -22,6 +22,7 @@ module.exports = {
         include: defaultInclude,
         loader: 'babel-loader',
         options: {
+          cacheDirectory: true,
           plugins: [
             [
               'import',

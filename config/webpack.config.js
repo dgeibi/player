@@ -11,8 +11,8 @@ const defaultInclude = src
 
 module.exports = (env = {}) => {
   const isProduction = env.production === true
-  const nodeEnv = !isProduction ? 'development' : 'production'
-  process.env.NODE_ENV = nodeEnv
+  const mode = !isProduction ? 'development' : 'production'
+  process.env.NODE_ENV = mode
 
   return merge([
     base,
@@ -26,9 +26,9 @@ module.exports = (env = {}) => {
         },
       },
     },
+    { mode },
     plugin(
       new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(nodeEnv),
         'process.env.REACT': env.react ? 'true' : 'false',
       })
     ),

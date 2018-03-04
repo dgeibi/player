@@ -1,10 +1,28 @@
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const WorkboxBuildWebpackPlugin = require('workbox-webpack-plugin')
 const path = require('path')
-const webpack = require('webpack')
 const { dist } = require('./env')
 
 module.exports = {
+  optimization: {
+    runtimeChunk: 'single',
+    splitChunks: {
+      chunks: 'all',
+    },
+    minimizer: [
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          ie8: false,
+          ecma: 8,
+          output: {
+            comments: false,
+            beautify: false,
+          },
+          warnings: false,
+        },
+      }),
+    ],
+  },
   output: {
     publicPath: './',
   },
@@ -26,30 +44,6 @@ module.exports = {
           },
         },
       ],
-    }),
-    new UglifyJsPlugin({
-      uglifyOptions: {
-        ie8: false,
-        ecma: 8,
-        output: {
-          comments: false,
-          beautify: false,
-        },
-        warnings: false,
-      },
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: module => module.context && module.context.includes('node_modules'),
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'antd',
-      chunks: ['vendor'],
-      minChunks: module => module.context && /antd|rc-/.test(module.context),
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'manifest',
-      minChunks: Infinity,
     }),
   ],
 }
