@@ -1,12 +1,11 @@
 import React from 'react'
+import PlayerApp from './components/PlayerApp'
+import PlayerProvider, { Context } from './components/PlayerProvider'
 
-import PlayerProvider from './components/PlayerProvider'
-import Shell from './components/Shell'
-
-export default function App({ playerPromise }) {
+export default function App({ createPlayer }) {
   return (
-    <PlayerProvider playerPromise={playerPromise}>
-      <Shell />
+    <PlayerProvider player={createPlayer()}>
+      <Context.Consumer>{({ player }) => <PlayerApp player={player} />}</Context.Consumer>
     </PlayerProvider>
   )
 }

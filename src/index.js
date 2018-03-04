@@ -1,18 +1,34 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { message } from 'antd'
+import { message, Spin } from 'antd'
 
+import PlaceHolder, { createFetcher } from './components/PlaceHolder'
 import isSWUpdateAvailable from './loadSW'
-import createPlayer from './createPlayer'
+import createPlainPlayer from './createPlayer'
 import './styles/style.css'
 
 import App from './App'
 
 const audio = new Audio()
-const playerPromise = createPlayer({ audio })
+const createPlayer = createFetcher(() => createPlainPlayer({ audio }))
 
 const render = () => {
-  ReactDOM.render(<App playerPromise={playerPromise} />, document.getElementById('root'))
+  ReactDOM.render(
+    <PlaceHolder
+      fallback={
+        <div className="shell-spin">
+          <Spin tip="Loading..." />
+        </div>
+      }
+      renderError={({ error }) => {
+        console.log(error)
+        return <div>Something Really Wrong! </div>
+      }}
+    >
+      <App createPlayer={createPlayer} />
+    </PlaceHolder>,
+    document.getElementById('root')
+  )
 }
 
 if (process.env.NODE_ENV === 'development') {

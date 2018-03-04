@@ -2,17 +2,15 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import createReactContext from 'create-react-context'
 
-const defaultContext = {
+export const Context = createReactContext({
   player: null,
   audio: null,
   duration: 0,
-}
-
-export const Context = createReactContext(defaultContext)
+})
 
 export default class PlayerProvider extends Component {
   static propTypes = {
-    playerPromise: PropTypes.object.isRequired,
+    player: PropTypes.object.isRequired,
     children: PropTypes.oneOfType([
       PropTypes.element,
       PropTypes.arrayOf(PropTypes.element),
@@ -21,40 +19,32 @@ export default class PlayerProvider extends Component {
 
   constructor(...args) {
     super(...args)
-    this.props.playerPromise.then(player => {
-      this.addEvents(player)
-      this.setState({
-        player,
-        duration: player.audio.duration || 0,
-      })
-    })
+    const { player } = this.props
+    if (!player) throw Error('player should be provided')
+    this.addEvents(player)
+    this.state = {
+      duration: player.audio.duration || 0,
+    }
   }
 
-  state = {
-    player: null,
-    duration: NaN,
-  }
-
-  async componentWillReceiveProps(nextProps) {
-    if (nextProps.playerPromise !== this.props.playerPromise) {
-      throw Error('not support change playerPromise')
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.player !== this.props.player) {
+      throw Error('not support change player')
     }
   }
 
   addEvents(player) {
-    if (!player) return
     player.audio.addEventListener('durationchange', this.updateDuration)
     player.on('empty', this.resetDuration)
   }
 
   removeEvents(player) {
-    if (!player) return
     player.audio.removeEventListener('durationchange', this.updateDuration)
     player.removeListener('empty', this.resetDuration)
   }
 
-  async componentWillUnmount() {
-    this.removeEvents(this.state.player)
+  componentWillUnmount() {
+    this.removeEvents(this.props.player)
   }
 
   updateDuration = e => {
@@ -71,10 +61,8 @@ export default class PlayerProvider extends Component {
   }
 
   getContextValue() {
-    const { player, duration } = this.state
-    if (!player) {
-      return defaultContext
-    }
+    const { duration } = this.state
+    const { player } = this.props
     return {
       player,
       duration: Math.floor(duration),
