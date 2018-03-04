@@ -1,3 +1,7 @@
+/* copy from
+   https://github.com/facebook/react/blob/master/packages/simple-cache-provider
+   https://zhuanlan.zhihu.com/p/34210780?group_id=953621750831964160
+*/
 import { Component } from 'react'
 
 export default class Placeholder extends Component {
@@ -11,24 +15,32 @@ export default class Placeholder extends Component {
   }
 
   componentDidCatch(error) {
-    if (this.mounted) {
-      if (typeof error.then === 'function') {
-        this.setState({ isLoading: true })
-        error.then(() => {
+    const isSuspender = typeof error.then === 'function'
+    const hasRenderError = typeof this.props.renderError === 'function'
+    if (!isSuspender && !hasRenderError) {
+      throw error
+    }
+
+    if (isSuspender) {
+      this.setState({ isLoading: true })
+      error.then(() => {
+        if (this.mounted) {
+          this.setState({ isLoading: false })
+        }
+      })
+      if (hasRenderError) {
+        error.catch(err => {
           if (this.mounted) {
-            this.setState({ isLoading: false })
+            this.setState({
+              error: err,
+            })
           }
         })
-        if (typeof this.props.renderError === 'function') {
-          error.catch(err => {
-            if (this.mounted) {
-              this.setState({
-                error: err,
-              })
-            }
-          })
-        }
       }
+    } else {
+      this.setState({
+        error,
+      })
     }
   }
 
@@ -51,23 +63,51 @@ export default class Placeholder extends Component {
   }
 }
 
-const cached = {}
-export const createFetcher = (createTask, onError) => {
-  let ref = cached
-  let task
-  return () => {
-    if (!task) {
-      task = createTask()
-      task.then(res => {
-        ref = res
-      })
-      if (typeof onError === 'function') {
-        task.catch(onError)
+const noop = () => {}
+
+const getRecord = (caches, createTask, hashedKey) => {
+  let record = caches.get(hashedKey)
+
+  if (record === undefined) {
+    const suspender = createTask(hashedKey)
+    suspender.then(
+      value => {
+        caches.set(hashedKey, {
+          rejected: false,
+          resolved: true,
+          value,
+        })
+      },
+      error => {
+        caches.set(hashedKey, {
+          resolved: false,
+          rejected: true,
+          error,
+        })
       }
+    )
+    record = {
+      resolved: false,
+      rejected: false,
+      suspender,
     }
-    if (ref === cached) {
-      throw task
+    caches.set(hashedKey, record)
+  }
+
+  return record
+}
+
+export const createLoader = (createTask, hash = noop) => {
+  const caches = new Map()
+  return key => {
+    const hashedKey = hash(key)
+    const record = getRecord(caches, createTask, hashedKey)
+    if (record.resolved) {
+      return record.value
     }
-    return ref
+    if (!record.rejected) {
+      throw record.suspender
+    }
+    throw record.error
   }
 }

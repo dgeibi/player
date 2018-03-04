@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { message, Spin } from 'antd'
 
-import PlaceHolder, { createFetcher } from './components/PlaceHolder'
+import PlaceHolder, { createLoader } from './components/PlaceHolder'
 import isSWUpdateAvailable from './loadSW'
 import createPlainPlayer from './createPlayer'
 import './styles/style.css'
@@ -10,7 +10,22 @@ import './styles/style.css'
 import App from './App'
 
 const audio = new Audio()
-const createPlayer = createFetcher(() => createPlainPlayer({ audio }))
+const createPlayer = createLoader(() => createPlainPlayer({ audio }))
+const renderError = ({ error }) => {
+  console.log(error)
+  const errorMsgs = ['Something Really Wrong!']
+  const t = typeof error
+  if (t === 'object' && error) {
+    if (error.stack) {
+      errorMsgs.push(error.stack)
+    } else if (error.message) {
+      errorMsgs.push(`Error: ${error.message}`)
+    }
+  } else if (t === 'string') {
+    errorMsgs.push(t)
+  }
+  return <pre>{errorMsgs.join('\n')}</pre>
+}
 
 const render = () => {
   ReactDOM.render(
@@ -20,10 +35,7 @@ const render = () => {
           <Spin tip="Loading..." />
         </div>
       }
-      renderError={({ error }) => {
-        console.log(error)
-        return <div>Something Really Wrong! </div>
-      }}
+      renderError={renderError}
     >
       <App createPlayer={createPlayer} />
     </PlaceHolder>,
