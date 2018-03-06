@@ -1,8 +1,7 @@
-import React, { Component } from 'react'
+import React, { Component, createContext } from 'react'
 import PropTypes from 'prop-types'
-import createReactContext from 'create-react-context'
 
-export const Context = createReactContext({
+export const Context = createContext({
   player: null,
   audio: null,
   duration: 0,

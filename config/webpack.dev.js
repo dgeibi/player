@@ -8,4 +8,7 @@ module.exports = {
     hot: true,
     contentBase: dist,
   },
+  output: {
+    globalObject: 'this', // https://github.com/webpack/webpack/issues/6642
+  },
 }

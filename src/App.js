@@ -2,10 +2,12 @@ import React from 'react'
 import PlayerApp from './components/PlayerApp'
 import PlayerProvider, { Context } from './components/PlayerProvider'
 
-export default function App({ createPlayer }) {
+function App({ opts, getPlayer }) {
   return (
-    <PlayerProvider player={createPlayer()}>
+    <PlayerProvider player={getPlayer(opts)}>
       <Context.Consumer>{({ player }) => <PlayerApp player={player} />}</Context.Consumer>
     </PlayerProvider>
   )
 }
+
+export default App

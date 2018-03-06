@@ -6,6 +6,7 @@ const analyzer = require('./helpers/analyzer')
 const plugin = require('./helpers/plugin')
 const base = require('./webpack.base')
 const { src } = require('./env')
+const customCamel2Dash = require('./babel/customCamel2Dash')
 
 const defaultInclude = src
 
@@ -16,6 +17,38 @@ module.exports = (env = {}) => {
 
   return merge([
     base,
+    {
+      module: {
+        rules: [
+          {
+            test: /\.js$/,
+            include: defaultInclude,
+            loader: 'babel-loader',
+            options: {
+              cacheDirectory: true,
+              plugins: [
+                [
+                  'import',
+                  {
+                    libraryName: 'antd',
+                    style: 'css',
+                  },
+                ],
+                [
+                  'import',
+                  customCamel2Dash({
+                    libraryName: 'react-feather',
+                    libraryDirectory: 'dist/icons',
+                  }),
+                  'react-feather-import',
+                ],
+                env.react && !isProduction && 'react-hot-loader/babel',
+              ].filter(Boolean),
+            },
+          },
+        ],
+      },
+    },
     env.react || {
       resolve: {
         alias: {

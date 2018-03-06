@@ -26,6 +26,8 @@ export default class Placeholder extends Component {
       error.then(() => {
         if (this.mounted) {
           this.setState({ isLoading: false })
+        } else {
+          throw Error('umounted?!')
         }
       })
       if (hasRenderError) {
@@ -34,6 +36,8 @@ export default class Placeholder extends Component {
             this.setState({
               error: err,
             })
+          } else {
+            throw Error('umounted?!')
           }
         })
       }
@@ -101,6 +105,12 @@ export const createLoader = (createTask, hash = noop) => {
   const caches = new Map()
   return key => {
     const hashedKey = hash(key)
+    if (
+      (typeof hashedKey === 'object' && hashedKey !== null) ||
+      typeof hashedKey === 'function'
+    ) {
+      throw Error('hashedKey should not be function or object')
+    }
     const record = getRecord(caches, createTask, hashedKey)
     if (record.resolved) {
       return record.value
