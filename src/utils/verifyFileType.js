@@ -65,7 +65,7 @@ const matchesFileType = (uint8, type) =>
 
 /**
  * @param {Uint8Array} bytes
- * @param {[(string|string[])]} types - e.g. 'mp3' or ['mp3']
+ * @param {(string|string[])} [types] mimetypes
  * @returns {string}
  */
 const verifyFileType = (bytes, types) => {
