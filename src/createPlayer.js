@@ -5,7 +5,7 @@ import FA from 'fasy'
 import { readAsArrayBuffer } from 'promise-file-reader'
 import { parse } from 'id3-parser'
 
-import getKey from './utils/getKey'
+import getKey from './utils/sha256'
 import PlayList from './PlayList'
 import ensureHasKey from './utils/ensure-has-key'
 import ensureNumber from './utils/ensure-number'

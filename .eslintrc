@@ -6,7 +6,8 @@
     "import/no-extraneous-dependencies": "off",
     "class-methods-use-this": "off",
     "global-require": "off",
-    "no-console": "off"
+    "no-console": "off",
+    "prefer-destructuring": "off"
   },
   "settings": {
     "import/resolver": {
