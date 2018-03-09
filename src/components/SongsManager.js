@@ -58,7 +58,7 @@ class SongsManager extends React.Component {
     },
   ]
 
-  componentWillMount() {
+  componentDidMount() {
     this.player.on('update', this.updatePlayerState)
   }
 

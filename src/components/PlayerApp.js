@@ -32,7 +32,7 @@ class PlayerApp extends Component {
     }
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.playerEvents.on('metadata', () => {
       this.setState(this.getMetaData())
     })
@@ -53,6 +53,10 @@ class PlayerApp extends Component {
 
     this.playerEvents.on('add-fail', filename => {
       message.error(`无法添加 ${filename}`)
+    })
+
+    this.playerEvents.on('play-fail', () => {
+      message.error(`播放失败`)
     })
   }
 

@@ -4,8 +4,9 @@ import isPromise from 'is-promise'
 import FA from 'fasy'
 import { readAsArrayBuffer } from 'promise-file-reader'
 import { parse } from 'id3-parser'
+import verifyFileType from './utils/verifyFileType'
 
-import getKey from './utils/sha256'
+import sha256 from './utils/sha256'
 import PlayList from './PlayList'
 import ensureHasKey from './utils/ensure-has-key'
 import ensureNumber from './utils/ensure-number'
@@ -146,20 +147,11 @@ export class Player {
    * @param {Array<File>} files
    */
   async addFiles(files) {
-    const { audio, metaDatas, emit } = this
-    const outputs = (await Promise.all(files.map(handleFile))).filter(Boolean)
-    const playlist = this.listOfAll
-
-    if (outputs.length < 1) return
-    const saveFileAndMetaData = async ({ key, metadata, file }) => {
-      await this.db.addItem({ key, metadata, file })
-      playlist.add(key)
-      metaDatas.set(key, metadata)
-    }
-    await FA.concurrent.forEach(saveFileAndMetaData, outputs)
-    await playlist.save()
-
-    emit('store-change')
+    const metas = (await Promise.all(files.map(this.getMetaFromFile))).filter(Boolean)
+    if (metas.length < 1) return
+    await FA.concurrent.forEach(this.saveFileAndMetaData, metas)
+    await this.listOfAll.save()
+    this.emit('store-change')
 
     if (this.selectedListID === FALLBACK_PLAYLIST) {
       this.emitSelectedList()
@@ -167,31 +159,61 @@ export class Player {
     if (!this.currentTrack) {
       await this.getPlayingList().setTrack()
     }
+  }
 
-    async function handleFile(file) {
-      const { type } = file
-      // android's bug: type is empty
-      if (type !== '' && !audio.canPlayType(type)) {
+  saveFileAndMetaData = async ({ key, metadata, file }) => {
+    await this.db.addItem({ key, metadata, file })
+    this.listOfAll.add(key)
+    this.metaDatas.set(key, metadata)
+  }
+
+  getMetaFromFile = async file => {
+    const { type } = file
+    const { audio, metaDatas, emit } = this
+    // android's bug: type is empty
+    // https://stackoverflow.com/questions/30689030/html-file-input-on-chrome-for-android-missing-extension-and-mime-type
+    if (type !== '' && (type.indexOf('audio') !== 0 || !audio.canPlayType(type))) {
+      emit('add-fail', file.name)
+      return null
+    }
+    let arrayBuffer
+    try {
+      arrayBuffer = await readAsArrayBuffer(file)
+    } catch (e) {
+      emit('add-fail', file.name)
+      return null
+    }
+    let bytes
+    // check type if mimeType is empty
+    if (type === '') {
+      bytes = new Uint8Array(arrayBuffer)
+      const mediaType = verifyFileType(bytes)
+      if (!mediaType || !audio.canPlayType(mediaType)) {
         emit('add-fail', file.name)
         return null
       }
-      const arrayBuffer = await readAsArrayBuffer(file)
-      const key = await getKey(arrayBuffer)
-      if (metaDatas.has(key)) {
-        return null
-      }
-      const { album, artist, title } = parse(new Uint8Array(arrayBuffer))
-      const { name } = file
-      const metadata = {
-        key,
-        album,
-        artist,
-        title,
-        name,
-      }
-      metadata.title = metadata.title || metadata.name.replace(/\.\S*?$/, '')
-      return { key, metadata, file }
     }
+    let key = await sha256(arrayBuffer)
+    // web crypto fallback(development only)
+    if (!key) {
+      key = `${file.name}${file.lastModified}${file.size}`
+    }
+    // don't repeat
+    if (metaDatas.has(key)) {
+      return null
+    }
+    bytes = bytes || new Uint8Array(arrayBuffer)
+    const { album, artist, title } = parse(bytes)
+    const { name } = file
+    const metadata = {
+      key,
+      album,
+      artist,
+      title,
+      name,
+    }
+    metadata.title = metadata.title || metadata.name.replace(/\.\S*?$/, '')
+    return { key, metadata, file }
   }
 
   /**
@@ -272,14 +294,17 @@ export class Player {
 
   async play(key, pl) {
     const playlist = this.playlists.get(pl || this.playingListID)
-    const ret = await playlist.play(key)
-
-    if (ret !== false) {
+    try {
+      await playlist.play(key)
       if (pl && this.playingListID !== pl) {
         this.playingListID = pl
       }
+      return true
+    } catch (e) {
+      console.error(e)
+      this.emit('play-fail', key)
+      return false
     }
-    return ret
   }
 
   createPlayList(opts) {

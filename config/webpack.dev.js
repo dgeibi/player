@@ -7,6 +7,7 @@ module.exports = {
   devServer: {
     hot: true,
     contentBase: dist,
+    host: '0.0.0.0',
   },
   output: {
     globalObject: 'this', // https://github.com/webpack/webpack/issues/6642

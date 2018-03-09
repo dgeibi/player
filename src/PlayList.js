@@ -101,11 +101,15 @@ class PlayList {
   }
 
   async play(key) {
-    if (!this.available()) return false
+    if (!this.available())
+      throw Error(
+        `playlist(${this.title}) is empty, can't find song(${key}) from the playlist`
+      )
 
     if (key !== undefined) {
       const pos = [...this.keys].indexOf(key)
-      if (pos === -1) return false
+      if (pos === -1)
+        throw Error(`can not find song(${key}) from the playlist(${this.title})`)
       this.pos = pos
       await this.setTrack()
     } else {

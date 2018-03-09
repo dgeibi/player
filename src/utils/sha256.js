@@ -1,5 +1,8 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
 export default function sha256(any) {
+  // crypto.subtle === undefined if in insecure contexts
+  // https://www.chromium.org/blink/webcrypto#TOC-Accessing-it
+  if (!crypto.subtle) return false
   let buffer = null
   if (typeof any === 'string') {
     buffer = new TextEncoder('utf-8').encode(any)
